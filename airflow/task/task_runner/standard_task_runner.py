@@ -45,8 +45,10 @@ class StandardTaskRunner(BaseTaskRunner):
 
     def start(self):
         if CAN_FORK and not self.run_as_user:
+            self.log.info("run task by fork")
             self.process = self._start_by_fork()
         else:
+            self.log.info("run task by exec")
             self.process = self._start_by_exec()
 
     def _start_by_exec(self) -> psutil.Process:
@@ -80,6 +82,7 @@ class StandardTaskRunner(BaseTaskRunner):
             parser = get_parser()
             # [1:] - remove "airflow" from the start of the command
             args = parser.parse_args(self._command[1:])
+            self.log.info(f"args for child process: {args}, command: {self._command}")
 
             # We prefer the job_id passed on the command-line because at this time, the
             # task instance may not have been updated.
@@ -97,6 +100,7 @@ class StandardTaskRunner(BaseTaskRunner):
                     dag_id=self._task_instance.dag_id,
                     task_id=self._task_instance.task_id,
                 ):
+                    self.log.info('Running: %s', self._command)
                     ret = args.func(args, dag=self.dag)
                     return_code = 0
                     if isinstance(ret, TaskReturnCode):

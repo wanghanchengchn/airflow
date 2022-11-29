@@ -111,6 +111,12 @@ DEFAULT_LOGGING_CONFIG: dict[str, Any] = {
             "stream": "sys.stdout",
             "filters": ["mask_secrets"],
         },
+        'grpc': {
+            'class': 'airflow.utils.log.logging_mixin.RedirectStdHandler',
+            'formatter': 'airflow',
+            'stream': 'sys.stdout',
+            'filters': ['mask_secrets'],
+        },
     },
     "loggers": {
         "airflow.processor": {
@@ -131,6 +137,12 @@ DEFAULT_LOGGING_CONFIG: dict[str, Any] = {
             "level": FAB_LOG_LEVEL,
             "propagate": True,
         },
+        'grpc.remote_xcom.grpc_worker_entrypoint':{
+            'handlers': ['grpc'],
+            'level': LOG_LEVEL,
+            # Set to true here (and reset via set_context) so that if no file is configured we still get logs!
+            'propagate': True,
+        }
     },
     "root": {
         "handlers": ["console"],

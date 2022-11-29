@@ -51,10 +51,10 @@ def get_task_runner(local_task_job_runner: LocalTaskJobRunner) -> BaseTaskRunner
     :return: The task runner to use to run the task.
     """
     if _TASK_RUNNER_NAME in CORE_TASK_RUNNERS:
-        log.debug("Loading core task runner: %s", _TASK_RUNNER_NAME)
+        log.info("Loading core task runner: %s", _TASK_RUNNER_NAME)
         task_runner_class = import_string(CORE_TASK_RUNNERS[_TASK_RUNNER_NAME])
     else:
-        log.debug("Loading task runner from custom path: %s", _TASK_RUNNER_NAME)
+        log.info("Loading task runner from custom path: %s", _TASK_RUNNER_NAME)
         try:
             task_runner_class = import_string(_TASK_RUNNER_NAME)
         except ImportError:

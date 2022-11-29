@@ -20,11 +20,13 @@ from __future__ import annotations
 import collections.abc
 import contextlib
 import hashlib
+import json
 import itertools
 import logging
 import math
 import operator
 import os
+import pathlib
 import signal
 import warnings
 from collections import defaultdict
@@ -124,6 +126,8 @@ from airflow.utils.task_group import MappedTaskGroup
 from airflow.utils.task_instance_session import set_current_task_instance_session
 from airflow.utils.timeout import timeout
 from airflow.utils.xcom import XCOM_RETURN_KEY
+
+import pickle
 
 TR = TaskReschedule
 
@@ -2468,10 +2472,10 @@ class TaskInstance(Base, LoggingMixin):
             with set_current_context(context):
                 task_orig = self.render_templates(context=context)
 
-            if not test_mode:
-                rtif = RenderedTaskInstanceFields(ti=self, render_templates=False)
-                RenderedTaskInstanceFields.write(rtif)
-                RenderedTaskInstanceFields.delete_old_records(self.task_id, self.dag_id)
+            # if not test_mode:
+            #     rtif = RenderedTaskInstanceFields(ti=self, render_templates=False)
+            #     RenderedTaskInstanceFields.write(rtif)
+            #     RenderedTaskInstanceFields.delete_old_records(self.task_id, self.dag_id)
 
             # Export context to make it available for operators to use.
             airflow_context_vars = context_to_airflow_vars(context, in_env_var_format=True)
@@ -2985,6 +2989,36 @@ class TaskInstance(Base, LoggingMixin):
                 message = "Passing 'execution_date' to 'TaskInstance.xcom_push()' is deprecated."
                 warnings.warn(message, RemovedInAirflow3Warning, stacklevel=3)
 
+        # Commented code below is for http xcom integration
+        
+        # serialized_value = XCom.serialize_value(
+        #     key=key,
+        #     value=value,
+        #     task_id=self.task_id,
+        #     dag_id=self.dag_id,
+        #     run_id=self.run_id,
+        #     map_index=self.map_index,
+        # )
+        # # output = pickle.dumps({
+        # #     "key": key,
+        # #     "task_id": self.task_id,
+        # #     "dag_id": self.dag_id,
+        # #     "run_id": self.run_id,
+        # #     "map_index": self.map_index,
+        # #     "value": serialized_value,
+        # # })
+        # # write xcom data to file for flask to pick up
+        # p = pathlib.Path('/home/airflow') / self.dag_id / self.task_id / self.run_id / str(self.map_index) / "output"
+        # with open(p, 'ab') as f:
+        #     pickle.dump({
+        #     "key": key,
+        #     "task_id": self.task_id,
+        #     "dag_id": self.dag_id,
+        #     "run_id": self.run_id,
+        #     "map_index": self.map_index,
+        #     "value": pickle.loads(serialized_value),
+        # },f)
+
         XCom.set(
             key=key,
             value=value,
@@ -2994,6 +3028,7 @@ class TaskInstance(Base, LoggingMixin):
             map_index=self.map_index,
             session=session,
         )
+        self.log.info(f"xcom_push: {key}, {value}, {self.task_id}, {self.run_id}, {self.map_index}")
 
     @provide_session
     def xcom_pull(
@@ -3037,6 +3072,43 @@ class TaskInstance(Base, LoggingMixin):
         a non-str iterable), a list of matching XComs is returned. Elements in
         the list is ordered by item ordering in ``task_id`` and ``map_index``.
         """
+        # NOTE: Commented code below is for http xcom integration
+
+        # self.log.info(f"xcom_pull: {key}, {self.run_id}, {dag_id}, {task_ids}, {map_indexes}")
+        # if not isinstance(task_ids, str):
+        #     raise ValueError(f'xcom_pull: task_ids should be of type str')
+
+        # if dag_id is None:
+        #     dag_id = self.dag_id
+
+        # # load xcom data from file provided by flask
+        # # filter on map_indexes, task_id and run_id
+        # base_path = pathlib.Path('/home/airflow') / self.dag_id / self.task_id / self.run_id / str(self.map_index)
+        # with open(base_path / "input", 'rb') as f:
+        #     data = pickle.load(f)
+        # logging.info(f'xcom_data: {data}')
+
+        # filtered = filter(
+        #     lambda xcom: xcom["run_id"] == self.run_id and xcom["dag_id"] == dag_id and xcom["task_id"] == task_ids,
+        #     data
+        # )
+        # if map_indexes is not None:
+        #     if isinstance(map_indexes, int):
+        #         filtered = tuple(xcom for xcom in filtered if xcom["map_index"] == map_indexes)
+        #     else:
+        #         map_index_pos = {map_index: i for i, map_index in enumerate(map_indexes)}
+        #         filtered = [xcom for xcom in filtered if xcom["map_index"] in map_indexes]
+        #         filtered.sort(key=lambda x: map_index_pos[x["map_index"]])
+        # else:
+        #     filtered = sorted(filtered, key=lambda x: x["map_index"])
+
+        # if len(filtered) == 0:
+        #     return default
+        # elif len(filtered) == 1:
+        #     return filtered[0]["value"]
+        # else:
+        #     return tuple(xcom["value"] for xcom in filtered)
+        
         if dag_id is None:
             dag_id = self.dag_id
 

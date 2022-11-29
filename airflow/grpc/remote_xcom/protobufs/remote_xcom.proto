@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package Remote_xcom;
+
+service TaskRun{
+    rpc HandleTask(task_invoke) returns (task_reply) {}
+}
+
+message task_invoke{
+    repeated string args = 1;
+}
+
+message task_reply{
+    bytes timing = 1;
+}
