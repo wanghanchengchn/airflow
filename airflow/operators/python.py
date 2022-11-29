@@ -197,6 +197,9 @@ class PythonOperator(BaseOperator):
         self.op_kwargs = self.determine_kwargs(context)
 
         return_value = self.execute_callable()
+        with open('/home/airflow/downstream_task_ids', 'w') as f:
+            json.dump(list(self.downstream_task_ids), f)
+        self.log.info(f"Downstream task ids: {self.downstream_task_ids}")
         if self.show_return_value_in_logs:
             self.log.info("Done. Returned value was: %s", return_value)
         else:
