@@ -7,7 +7,7 @@ spec:
   template:
     spec:
       containers:
-        - image: "ghcr.io/jonamuen/airflow-workflow-gateway:latest"
+        - image: "nehalem90/airflow-workflow-gateway:latest"
           imagePullPolicy: Always
           ports:
             - name: http1

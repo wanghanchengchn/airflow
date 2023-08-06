@@ -139,12 +139,13 @@ class LocalTaskJobRunner(BaseJobRunner, LoggingMixin):
                 print(id2name[threadId])
                 traceback.print_stack(f=stack)
 
-        signal.signal(signal.SIGSEGV, segfault_signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
+        # signal.signal(signal.SIGSEGV, segfault_signal_handler)
+        # signal.signal(signal.SIGTERM, signal_handler)
 
         if not IS_WINDOWS:
             # This is not supported on Windows systems
-            signal.signal(signal.SIGUSR2, sigusr2_debug_handler)
+            # signal.signal(signal.SIGUSR2, sigusr2_debug_handler)
+            pass
 
         if not self.task_instance.check_and_change_state_before_execution(
             mark_success=self.mark_success,

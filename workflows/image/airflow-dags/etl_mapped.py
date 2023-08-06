@@ -21,6 +21,7 @@ def timing(f):
     start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
     catchup=False,
     tags=['example'],
+    is_paused_upon_creation=False
 )
 def etl_example_dynamic():
     @task

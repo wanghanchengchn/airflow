@@ -16,12 +16,22 @@
 # under the License.
 from __future__ import annotations
 
+import collections
+import concurrent.futures
+
+import collections
+import concurrent.futures
+
 import contextlib
 import json
+import logging
+import subprocess
 import multiprocessing
 import time
 from queue import Empty, Queue
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, Dict, Optional, Sequence, Tuple, List
+
+from airflow.models.dagbag import DagBag
 
 from kubernetes import client, watch
 from kubernetes.client.rest import ApiException
@@ -35,8 +45,13 @@ from airflow.providers.cncf.kubernetes.kubernetes_helper_functions import (
     create_pod_id,
 )
 from airflow.providers.cncf.kubernetes.pod_generator import PodGenerator
+from airflow.settings import pod_mutation_hook
 from airflow.utils.log.logging_mixin import LoggingMixin
 from airflow.utils.state import TaskInstanceState
+import grpc
+import pickle
+import subprocess
+from airflow.grpc.remote_xcom.invoker import invoke_task
 
 try:
     from airflow.providers.cncf.kubernetes.executors.kubernetes_executor_types import (
@@ -286,6 +301,27 @@ class KubernetesJobWatcher(multiprocessing.Process, LoggingMixin):
             )
 
 
+TaskExecutionKey = collections.namedtuple("TaskExecutionKey", ("task_id", "dag_id", "run_id"))
+
+class Timer:
+    def __init__(self, func_name, annotations):
+        self._times = []
+        self._timestamp_annotations = []
+        self._func_name = func_name
+        self._annotations = annotations
+
+    def time(self, annotation: str):
+        self._times.append(time.time())
+        self._timestamp_annotations.append(annotation)
+
+    def get_log_line(self):
+        timing_info = {"function": self._func_name, "times": self._times, "timestamp_annotations": self._timestamp_annotations}
+        timing_info.update(self._annotations)
+        return f'TIMING: {json.dumps(timing_info)}'
+
+    def update_annotations(self, new_annotations):
+        self._annotations.update(new_annotations)
+
 class AirflowKubernetesScheduler(LoggingMixin):
     """Airflow Scheduler for Kubernetes."""
 
@@ -307,23 +343,105 @@ class AirflowKubernetesScheduler(LoggingMixin):
         self.watcher_queue = self._manager.Queue()
         self.scheduler_job_id = scheduler_job_id
         self.kube_watchers = self._make_kube_watchers()
+        self.executor_pool = concurrent.futures.ThreadPoolExecutor()
+        self._kn_workers: Dict[Tuple[str, str], str] | None = None  # map dag_id to knative worker urls
+        
+        # load kn service urls asynchronously
+        self._worker_service_urls_future = self.executor_pool.submit(self._retrieve_kn_service_urls)    
+        
+    def _retrieve_kn_service_urls(self):
+        while True:
+            kn = subprocess.run(('kn', 'service', 'list', '-n', 'airflow', '-o', 'json'), stdout=subprocess.PIPE)
+            if kn.returncode != 0:
+                self.log.warning(f'kn service list exited with code {kn.returncode}, retrying in 1 second')
+                time.sleep(1)
+                continue
 
-    def run_pod_async(self, pod: k8s.V1Pod, **kwargs):
-        """Run POD asynchronously."""
+            self.log.info(f'kn service list returned')
+            knative_services = json.loads(kn.stdout)
+            self.log.debug(f'knative_services: {knative_services}')
+
+            kn_workers = {}
+            for service in knative_services['items']:
+                try:
+                    dag_id = service['metadata']['annotations']['dag_id']
+                    task_id = service['metadata']['annotations']['task_id']
+                    worker_url = service['status']['url']
+                    kn_workers[(dag_id, task_id)] = worker_url
+                except KeyError as e:
+                    logging.info(e)
+            return kn_workers
+
+    def get_worker_service_url(self, dag_id: str, task_id: str):
+        # when this method is called for the first time the worker service urls should already have been
+        # loaded asynchronously, so we just retrieve and store them
+        if self._kn_workers is None:
+            try:
+                self._kn_workers = self._worker_service_urls_future.result(timeout=20)
+            except TimeoutError:
+                self.log.error(f'Timeout while waiting for list of knative services')
+                return None
+        if (dag_id, task_id) not in self._kn_workers:
+            # maybe worker for this dag was not yet available when we last checked, so try again
+            self._worker_service_urls_future = self.executor_pool.submit(self._retrieve_kn_service_urls)
+            self._kn_workers = self._worker_service_urls_future.result(timeout=20)
+
+        return self._kn_workers.get((dag_id, task_id))
+    
+    def run_pod_async(self, pod: k8s.V1Pod, key, args, **kwargs):
+        dag_id, task_id, run_id, try_number, map_index = key
+        annotations = {
+            'dag_id': dag_id,
+            'task_id': task_id,
+            'try_number': try_number,
+            'run_id': run_id,
+            'map_index': map_index,
+        }
+        
+        run_pod_timer = Timer("executor_run_pod_async", annotations)
+        run_pod_timer.time("function_entry")
+        """Runs POD asynchronously."""
         sanitized_pod = self.kube_client.api_client.sanitize_for_serialization(pod)
         json_pod = json.dumps(sanitized_pod, indent=2)
 
-        self.log.debug("Pod Creation Request: \n%s", json_pod)
-        try:
-            resp = self.kube_client.create_namespaced_pod(
-                body=sanitized_pod, namespace=pod.metadata.namespace, **kwargs
-            )
-            self.log.debug("Pod Creation Response: %s", resp)
-        except Exception as e:
-            self.log.exception("Exception when attempting to create Namespaced Pod: %s", json_pod)
-            raise e
-        return resp
+        worker_service_url = self.get_worker_service_url(dag_id, task_id)
+        if worker_service_url is None:
+            self.log.error(f'No knative worker available for task {task_id} in dag {dag_id}')
+            self.watcher_queue.put(("airflow-worker-0", "airflow", TaskInstanceState.FAILED, annotations, 0))
+            return
 
+        endpoint = worker_service_url
+        self.log.info(f'Knative service airflow worker endpoint: {endpoint}')
+        # collect xcom values from upstream tasks
+        timer = Timer("executor_async_task", annotations)
+        timer.time("function_entry")
+        try:
+            self.log.info(f"Sending POST request to {endpoint} with arguments {args}")
+            timer.time("before_post_request")
+            try: 
+                r = invoke_task(target=endpoint, args=args)
+                timing  = pickle.loads(r.timing)
+                self.log.info(f"execution_timing: {timing}")
+                timer.time("after_post_request")
+                
+            except grpc.RpcError as e:
+                self.log.info(f"Airflow Worker {endpoint} Failed with error {e}")
+                self.watcher_queue.put(("airflow-worker-0", "airflow", TaskInstanceState.FAILED, annotations, 0))
+                return
+
+            self.log.info(f'Task run {annotations} done with status code 200')
+            # state 'None' indicates success in this context
+            self.watcher_queue.put(("airflow-worker-0", "airflow", None, annotations, 0))
+            timer.time("function_exit")
+            self.log.info(timer.get_log_line())
+            return
+        
+        except Exception as e:
+            self.log.info(f"Airflow Worker {endpoint} Failed with error {e}")
+            self.log.error(e)
+            self.watcher_queue.put(("airflow-worker-0", "airflow", TaskInstanceState.FAILED, annotations, 0))
+            return
+    
     def _make_kube_watcher(self, namespace) -> KubernetesJobWatcher:
         resource_version = ResourceVersion().resource_version.get(namespace, "0")
         watcher = KubernetesJobWatcher(
@@ -410,7 +528,7 @@ class AirflowKubernetesScheduler(LoggingMixin):
         self.log.debug("Kubernetes launching image %s", pod.spec.containers[0].image)
 
         # the watcher will monitor pods, so we do not block.
-        self.run_pod_async(pod, **self.kube_config.kube_client_request_args)
+        self.run_pod_async(pod, key, command, **self.kube_config.kube_client_request_args)
         self.log.debug("Kubernetes Job created!")
 
     def delete_pod(self, pod_name: str, namespace: str) -> None:

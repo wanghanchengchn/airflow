@@ -19,7 +19,8 @@ def timing(f):
 @dag(
     schedule_interval=None,
     start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
-    catchup=False)
+    catchup=False,
+    is_paused_upon_creation=False)
 def benchmark_w4_d3():
     @task
     @timing

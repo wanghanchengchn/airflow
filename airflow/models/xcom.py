@@ -657,8 +657,9 @@ class BaseXCom(TaskInstanceDependencies, LoggingMixin):
         if conf.getboolean("core", "enable_xcom_pickling"):
             return pickle.dumps(value)
         try:
-            return json.dumps(value, cls=XComEncoder).encode("UTF-8")
-        except (ValueError, TypeError) as ex:
+            return pickle.dumps(value)
+            # return json.dumps(value).encode('UTF-8')
+        except (ValueError, TypeError):
             log.error(
                 "%s."
                 " If you are using pickle instead of JSON for XCom,"

@@ -67,6 +67,7 @@ from airflow.utils.net import get_hostname
 from airflow.utils.providers_configuration_loader import providers_configuration_loaded
 from airflow.utils.session import NEW_SESSION, create_session, provide_session
 from airflow.utils.state import DagRunState
+from airflow.utils.types import DagRunType
 from airflow.utils.task_instance_session import set_current_task_instance_session
 
 if TYPE_CHECKING:
@@ -199,6 +200,149 @@ def _get_ti(
     return ti, dr_created
 
 
+def _get_ti_without_db(
+    task: Operator,
+    map_index: int,
+    *,
+    exec_date_or_run_id: str | None = None,
+    pool: str | None = None,
+    create_if_necessary: CreateIfNecessary = False,
+    ) -> tuple[TaskInstance, bool]:
+    
+    def _get_dag_run_without_db(
+        *,
+        dag: DAG,
+        create_if_necessary: CreateIfNecessary,
+        exec_date_or_run_id: str | None = None,
+        ) -> tuple[DagRun, bool]:
+        
+        dag_run_execution_date = pendulum.instance(timezone.utcnow())
+
+        dag_run = DagRun(
+            dag.dag_id,
+            run_id=exec_date_or_run_id,
+            execution_date=dag_run_execution_date,
+            data_interval=dag.timetable.infer_manual_data_interval(run_after=dag_run_execution_date),
+        )
+        dag_run.external_trigger = True
+        dag_run.run_type=DagRunType.MANUAL
+        return dag_run, True
+    
+    dag = task.dag
+    if dag is None:
+        raise ValueError("Cannot get task instance for a task not assigned to a DAG")
+    if not exec_date_or_run_id and not create_if_necessary:
+        raise ValueError("Must provide `exec_date_or_run_id` if not `create_if_necessary`.")
+    if needs_expansion(task):
+        if map_index < 0:
+            raise RuntimeError("No map_index passed to mapped task")
+    elif map_index >= 0:
+        raise RuntimeError("map_index passed to non-mapped task")
+    
+    dag_run, dr_created = _get_dag_run_without_db(
+        dag=task.dag,
+        exec_date_or_run_id=exec_date_or_run_id,
+        create_if_necessary=create_if_necessary,
+    )
+    log.info(f"run_type: {dag_run.run_type}")
+
+    ti = TaskInstance(task, run_id=dag_run.run_id, map_index=map_index)
+    ti.dag_run = dag_run
+
+    ti.refresh_from_task(task, pool_override=pool)
+    return ti, dr_created
+
+
+def _get_ti_without_db(
+    task: BaseOperator,
+    map_index: int,
+    *,
+    exec_date_or_run_id: str | None = None,
+    pool: str | None = None,
+    create_if_necessary: CreateIfNecessary = False,
+    ) -> tuple[TaskInstance, bool]:
+    
+    
+    def _get_dag_run_without_db(
+        *,
+        dag: DAG,
+        create_if_necessary: CreateIfNecessary,
+        exec_date_or_run_id: str | None = None,
+        ) -> tuple[DagRun, bool]:
+        
+        dag_run_execution_date = timezone.utcnow()
+        dag_run = DagRun(dag.dag_id, run_id=exec_date_or_run_id, execution_date=dag_run_execution_date)
+        dag_run.run_type=DagRunType.MANUAL
+        return dag_run, True
+    
+    
+    if not exec_date_or_run_id and not create_if_necessary:
+        raise ValueError("Must provide `exec_date_or_run_id` if not `create_if_necessary`.")
+    if task.is_mapped:
+        if map_index < 0:
+            raise RuntimeError("No map_index passed to mapped task")
+    elif map_index >= 0:
+        raise RuntimeError("map_index passed to non-mapped task")
+    dag_run, dr_created = _get_dag_run_without_db(
+        dag=task.dag,
+        exec_date_or_run_id=exec_date_or_run_id,
+        create_if_necessary=create_if_necessary,
+    )
+    
+    log.info(f"run_type: {dag_run.run_type}")
+
+    ti = TaskInstance(task, run_id=dag_run.run_id, map_index=map_index)
+    ti.dag_run = dag_run
+
+    ti.refresh_from_task(task, pool_override=pool)
+    return ti, dr_created
+
+
+def _get_ti_without_db(
+    task: BaseOperator,
+    map_index: int,
+    *,
+    exec_date_or_run_id: str | None = None,
+    pool: str | None = None,
+    create_if_necessary: CreateIfNecessary = False,
+    ) -> tuple[TaskInstance, bool]:
+    
+    
+    def _get_dag_run_without_db(
+        *,
+        dag: DAG,
+        create_if_necessary: CreateIfNecessary,
+        exec_date_or_run_id: str | None = None,
+        ) -> tuple[DagRun, bool]:
+        
+        dag_run_execution_date = timezone.utcnow()
+        dag_run = DagRun(dag.dag_id, run_id=exec_date_or_run_id, execution_date=dag_run_execution_date)
+        dag_run.run_type=DagRunType.MANUAL
+        return dag_run, True
+    
+    
+    if not exec_date_or_run_id and not create_if_necessary:
+        raise ValueError("Must provide `exec_date_or_run_id` if not `create_if_necessary`.")
+    if task.is_mapped:
+        if map_index < 0:
+            raise RuntimeError("No map_index passed to mapped task")
+    elif map_index >= 0:
+        raise RuntimeError("map_index passed to non-mapped task")
+    dag_run, dr_created = _get_dag_run_without_db(
+        dag=task.dag,
+        exec_date_or_run_id=exec_date_or_run_id,
+        create_if_necessary=create_if_necessary,
+    )
+    
+    log.info(f"run_type: {dag_run.run_type}")
+
+    ti = TaskInstance(task, run_id=dag_run.run_id, map_index=map_index)
+    ti.dag_run = dag_run
+
+    ti.refresh_from_task(task, pool_override=pool)
+    return ti, dr_created
+
+
 def _run_task_by_selected_method(
     args, dag: DAG, ti: TaskInstance | TaskInstancePydantic
 ) -> None | TaskReturnCode:
@@ -213,9 +357,12 @@ def _run_task_by_selected_method(
     """
     assert not isinstance(ti, TaskInstancePydantic), "Wait for AIP-44 implementation to complete"
     if args.local:
+        log.info(f"run_local_task_job")
         return _run_task_by_local_task_job(args, ti)
     if args.raw:
+        log.info(f"run_raw_task_job")
         return _run_raw_task(args, ti)
+    log.info(f"run_executor_task_job")
     _run_task_by_executor(args, dag, ti)
     return None
 
@@ -361,7 +508,7 @@ class TaskCommandMarker:
 
 
 @cli_utils.action_cli(check_db=False)
-def task_run(args, dag: DAG | None = None) -> TaskReturnCode | None:
+def task_run(args, dag: DAG | None = None, task = None) -> TaskReturnCode | None:
     """
     Run a single task instance.
 
@@ -412,9 +559,11 @@ def task_run(args, dag: DAG | None = None) -> TaskReturnCode | None:
         _dag = get_dag_by_pickle(args.pickle)
     elif not dag:
         _dag = get_dag(args.subdir, args.dag_id, args.read_from_db)
+        log.info(f"get dag: {_dag}")
     else:
         _dag = dag
-    task = _dag.get_task(task_id=args.task_id)
+    if not task:
+        task = _dag.get_task(task_id=args.task_id)
     ti, _ = _get_ti(task, args.map_index, exec_date_or_run_id=args.execution_date_or_run_id, pool=args.pool)
     ti.init_run_context(raw=args.raw)
 

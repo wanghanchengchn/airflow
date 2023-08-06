@@ -127,6 +127,8 @@ from airflow.utils.task_instance_session import set_current_task_instance_sessio
 from airflow.utils.timeout import timeout
 from airflow.utils.xcom import XCOM_RETURN_KEY
 
+import pickle
+
 TR = TaskReschedule
 
 _CURRENT_CONTEXT: list[Context] = []
@@ -2111,6 +2113,7 @@ class TaskInstance(Base, LoggingMixin):
             Stats.incr("previously_succeeded", tags=ti.stats_tags)
 
         if not mark_success:
+            self.log.info(f"if not mark_success")
             # Firstly find non-runnable and non-requeueable tis.
             # Since mark_success is not set, we do nothing.
             non_requeueable_dep_context = DepContext(
@@ -2125,6 +2128,7 @@ class TaskInstance(Base, LoggingMixin):
             if not ti.are_dependencies_met(
                 dep_context=non_requeueable_dep_context, session=session, verbose=True
             ):
+                self.log.info(f"if not dependencies met")
                 session.commit()
                 return False
 
@@ -2164,6 +2168,7 @@ class TaskInstance(Base, LoggingMixin):
                     ti.max_tries + 1,
                 )
                 ti.queued_dttm = timezone.utcnow()
+                self.log.info(f"if not are dependencies met")
                 session.merge(ti)
                 session.commit()
                 return False
@@ -2470,10 +2475,10 @@ class TaskInstance(Base, LoggingMixin):
             with set_current_context(context):
                 task_orig = self.render_templates(context=context)
 
-            if not test_mode:
-                rtif = RenderedTaskInstanceFields(ti=self, render_templates=False)
-                RenderedTaskInstanceFields.write(rtif)
-                RenderedTaskInstanceFields.delete_old_records(self.task_id, self.dag_id)
+            # if not test_mode:
+            #     rtif = RenderedTaskInstanceFields(ti=self, render_templates=False)
+            #     RenderedTaskInstanceFields.write(rtif)
+            #     RenderedTaskInstanceFields.delete_old_records(self.task_id, self.dag_id)
 
             # Export context to make it available for operators to use.
             airflow_context_vars = context_to_airflow_vars(context, in_env_var_format=True)
@@ -2987,26 +2992,35 @@ class TaskInstance(Base, LoggingMixin):
                 message = "Passing 'execution_date' to 'TaskInstance.xcom_push()' is deprecated."
                 warnings.warn(message, RemovedInAirflow3Warning, stacklevel=3)
 
-        serialized_value = XCom.serialize_value(
-            key=key,
-            value=value,
-            task_id=self.task_id,
-            dag_id=self.dag_id,
-            run_id=self.run_id,
-            map_index=self.map_index,
-        )
-        output = json.dumps({
-            "key": key,
-            "task_id": self.task_id,
-            "dag_id": self.dag_id,
-            "run_id": self.run_id,
-            "map_index": self.map_index,
-            "value": serialized_value.decode('UTF-8'),
-        })
-        # write xcom data to file for flask to pick up
-        p = pathlib.Path('/home/airflow') / self.dag_id / self.task_id / self.run_id / str(self.map_index) / "output"
-        with open(p, 'a') as f:
-            f.write(output + "\n")
+        # Commented code below is for http xcom integration
+        
+        # serialized_value = XCom.serialize_value(
+        #     key=key,
+        #     value=value,
+        #     task_id=self.task_id,
+        #     dag_id=self.dag_id,
+        #     run_id=self.run_id,
+        #     map_index=self.map_index,
+        # )
+        # # output = pickle.dumps({
+        # #     "key": key,
+        # #     "task_id": self.task_id,
+        # #     "dag_id": self.dag_id,
+        # #     "run_id": self.run_id,
+        # #     "map_index": self.map_index,
+        # #     "value": serialized_value,
+        # # })
+        # # write xcom data to file for flask to pick up
+        # p = pathlib.Path('/home/airflow') / self.dag_id / self.task_id / self.run_id / str(self.map_index) / "output"
+        # with open(p, 'ab') as f:
+        #     pickle.dump({
+        #     "key": key,
+        #     "task_id": self.task_id,
+        #     "dag_id": self.dag_id,
+        #     "run_id": self.run_id,
+        #     "map_index": self.map_index,
+        #     "value": pickle.loads(serialized_value),
+        # },f)
 
         XCom.set(
             key=key,
@@ -3061,40 +3075,97 @@ class TaskInstance(Base, LoggingMixin):
         a non-str iterable), a list of matching XComs is returned. Elements in
         the list is ordered by item ordering in ``task_id`` and ``map_index``.
         """
-        self.log.info(f"xcom_pull: {key}, {self.run_id}, {dag_id}, {task_ids}, {map_indexes}")
-        if not isinstance(task_ids, str):
-            raise ValueError(f'xcom_pull: task_ids should be of type str')
+        # NOTE: Commented code below is for http xcom integration
 
+        # self.log.info(f"xcom_pull: {key}, {self.run_id}, {dag_id}, {task_ids}, {map_indexes}")
+        # if not isinstance(task_ids, str):
+        #     raise ValueError(f'xcom_pull: task_ids should be of type str')
+
+        # if dag_id is None:
+        #     dag_id = self.dag_id
+
+        # # load xcom data from file provided by flask
+        # # filter on map_indexes, task_id and run_id
+        # base_path = pathlib.Path('/home/airflow') / self.dag_id / self.task_id / self.run_id / str(self.map_index)
+        # with open(base_path / "input", 'rb') as f:
+        #     data = pickle.load(f)
+        # logging.info(f'xcom_data: {data}')
+
+        # filtered = filter(
+        #     lambda xcom: xcom["run_id"] == self.run_id and xcom["dag_id"] == dag_id and xcom["task_id"] == task_ids,
+        #     data
+        # )
+        # if map_indexes is not None:
+        #     if isinstance(map_indexes, int):
+        #         filtered = tuple(xcom for xcom in filtered if xcom["map_index"] == map_indexes)
+        #     else:
+        #         map_index_pos = {map_index: i for i, map_index in enumerate(map_indexes)}
+        #         filtered = [xcom for xcom in filtered if xcom["map_index"] in map_indexes]
+        #         filtered.sort(key=lambda x: map_index_pos[x["map_index"]])
+        # else:
+        #     filtered = sorted(filtered, key=lambda x: x["map_index"])
+
+        # if len(filtered) == 0:
+        #     return default
+        # elif len(filtered) == 1:
+        #     return filtered[0]["value"]
+        # else:
+        #     return tuple(xcom["value"] for xcom in filtered)
+        
         if dag_id is None:
             dag_id = self.dag_id
 
-        # load xcom data from file provided by flask
-        # filter on map_indexes, task_id and run_id
-        base_path = pathlib.Path('/home/airflow') / self.dag_id / self.task_id / self.run_id / str(self.map_index)
-        with open(base_path / "input") as f:
-            data = json.load(f)
-        logging.info(f'xcom_data: {data}')
-
-        filtered = filter(
-            lambda xcom: xcom["run_id"] == self.run_id and xcom["dag_id"] == dag_id and xcom["task_id"] == task_ids,
-            data
+        query = XCom.get_many(
+            key=key,
+            run_id=self.run_id,
+            dag_ids=dag_id,
+            task_ids=task_ids,
+            map_indexes=map_indexes,
+            include_prior_dates=include_prior_dates,
+            session=session,
         )
-        if map_indexes is not None:
-            if isinstance(map_indexes, int):
-                filtered = tuple(xcom for xcom in filtered if xcom["map_index"] == map_indexes)
-            else:
-                map_index_pos = {map_index: i for i, map_index in enumerate(map_indexes)}
-                filtered = [xcom for xcom in filtered if xcom["map_index"] in map_indexes]
-                filtered.sort(key=lambda x: map_index_pos[x["map_index"]])
-        else:
-            filtered = sorted(filtered, key=lambda x: x["map_index"])
 
-        if len(filtered) == 0:
-            return default
-        elif len(filtered) == 1:
-            return json.loads(filtered[0]["value"])
+        # NOTE: Since we're only fetching the value field and not the whole
+        # class, the @recreate annotation does not kick in. Therefore we need to
+        # call XCom.deserialize_value() manually.
+
+        # We are only pulling one single task.
+        if (task_ids is None or isinstance(task_ids, str)) and not isinstance(map_indexes, Iterable):
+            first = query.with_entities(
+                XCom.run_id, XCom.task_id, XCom.dag_id, XCom.map_index, XCom.value
+            ).first()
+            if first is None:  # No matching XCom at all.
+                return default
+            if map_indexes is not None or first.map_index < 0:
+                return XCom.deserialize_value(first)
+            query = query.order_by(None).order_by(XCom.map_index.asc())
+            return LazyXComAccess.build_from_xcom_query(query)
+
+        # At this point either task_ids or map_indexes is explicitly multi-value.
+        # Order return values to match task_ids and map_indexes ordering.
+        query = query.order_by(None)
+        if task_ids is None or isinstance(task_ids, str):
+            query = query.order_by(XCom.task_id)
         else:
-            return tuple(json.loads(xcom["value"]) for xcom in filtered)
+            task_id_whens = {tid: i for i, tid in enumerate(task_ids)}
+            if task_id_whens:
+                query = query.order_by(case(task_id_whens, value=XCom.task_id))
+            else:
+                query = query.order_by(XCom.task_id)
+        if map_indexes is None or isinstance(map_indexes, int):
+            query = query.order_by(XCom.map_index)
+        elif isinstance(map_indexes, range):
+            order = XCom.map_index
+            if map_indexes.step < 0:
+                order = order.desc()
+            query = query.order_by(order)
+        else:
+            map_index_whens = {map_index: i for i, map_index in enumerate(map_indexes)}
+            if map_index_whens:
+                query = query.order_by(case(map_index_whens, value=XCom.map_index))
+            else:
+                query = query.order_by(XCom.map_index)
+        return LazyXComAccess.build_from_xcom_query(query)
 
     @provide_session
     def get_num_running_task_instances(self, session: Session, same_dagrun: bool = False) -> int:
