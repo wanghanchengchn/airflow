@@ -45,3 +45,6 @@ spec:
                 secretKeyRef:
                   name: airflow-metadata
                   key: connection
+    metadata:
+      annotations:
+        autoscaling.knative.dev/window: "60s"

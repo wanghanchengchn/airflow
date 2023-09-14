@@ -21,7 +21,7 @@
 
 [![PyPI version](https://badge.fury.io/py/apache-airflow.svg)](https://badge.fury.io/py/apache-airflow)
 [![GitHub Build](https://github.com/apache/airflow/workflows/CI%20Build/badge.svg)](https://github.com/apache/airflow/actions)
-[![Coverage Status](https://img.shields.io/codecov/c/github/apache/airflow/main.svg)](https://codecov.io/github/apache/airflow?branch=main)
+[![Coverage Status](https://codecov.io/gh/apache/airflow/graph/badge.svg?token=WdLKlKHOAU)](https://codecov.io/gh/apache/airflow)
 [![License](https://img.shields.io/:license-Apache%202-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.txt)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/apache-airflow.svg)](https://pypi.org/project/apache-airflow/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/apache/airflow.svg)](https://hub.docker.com/r/apache/airflow)
@@ -31,6 +31,8 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Twitter Follow](https://img.shields.io/twitter/follow/ApacheAirflow.svg?style=social&label=Follow)](https://twitter.com/ApacheAirflow)
 [![Slack Status](https://img.shields.io/badge/slack-join_chat-white.svg?logo=slack&style=social)](https://s.apache.org/airflow-slack)
+[![Contributors](https://img.shields.io/github/contributors/apache/airflow)](https://github.com/apache/airflow/graphs/contributors)
+[![OSSRank](https://shields.io/endpoint?url=https://ossrank.com/shield/6)](https://ossrank.com/p/6)
 
 [Apache Airflow](https://airflow.apache.org/docs/apache-airflow/stable/) (or simply Airflow) is a platform to programmatically author, schedule, and monitor workflows.
 
@@ -55,7 +57,6 @@ Use Airflow to author workflows as directed acyclic graphs (DAGs) of tasks. The 
 - [Support for Python and Kubernetes versions](#support-for-python-and-kubernetes-versions)
 - [Base OS support for reference Airflow images](#base-os-support-for-reference-airflow-images)
 - [Approach to dependencies of Airflow](#approach-to-dependencies-of-airflow)
-- [Release process for Providers](#release-process-for-providers)
 - [Contributing](#contributing)
 - [Who uses Apache Airflow?](#who-uses-apache-airflow)
 - [Who Maintains Apache Airflow?](#who-maintains-apache-airflow)
@@ -70,7 +71,7 @@ Use Airflow to author workflows as directed acyclic graphs (DAGs) of tasks. The 
 
 Airflow works best with workflows that are mostly static and slowly changing. When the DAG structure is similar from one run to the next, it clarifies the unit of work and continuity. Other similar projects include [Luigi](https://github.com/spotify/luigi), [Oozie](https://oozie.apache.org/) and [Azkaban](https://azkaban.github.io/).
 
-Airflow is commonly used to process data, but has the opinion that tasks should ideally be idempotent (i.e., results of the task will be the same, and will not create duplicated data in a destination system), and should not pass large quantities of data from one task to the next (though tasks can pass metadata using Airflow's [Xcom feature](https://airflow.apache.org/docs/apache-airflow/stable/concepts.html#xcoms)). For high-volume, data-intensive tasks, a best practice is to delegate to external services specializing in that type of work.
+Airflow is commonly used to process data, but has the opinion that tasks should ideally be idempotent (i.e., results of the task will be the same, and will not create duplicated data in a destination system), and should not pass large quantities of data from one task to the next (though tasks can pass metadata using Airflow's [XCom feature](https://airflow.apache.org/docs/apache-airflow/stable/concepts/xcoms.html)). For high-volume, data-intensive tasks, a best practice is to delegate to external services specializing in that type of work.
 
 Airflow is not a streaming solution, but it is often used to process real-time data, pulling data off streams in batches.
 
@@ -85,15 +86,15 @@ Airflow is not a streaming solution, but it is often used to process real-time d
 
 Apache Airflow is tested with:
 
-|                     | Main version (dev)           | Stable version (2.4.3)       |
-|---------------------|------------------------------|------------------------------|
-| Python              | 3.7, 3.8, 3.9, 3.10          | 3.7, 3.8, 3.9, 3.10          |
-| Platform            | AMD64/ARM64(\*)              | AMD64/ARM64(\*)              |
-| Kubernetes          | 1.21, 1.22, 1.23, 1.24, 1.25 | 1.20, 1.21, 1.22, 1.23, 1.24 |
-| PostgreSQL          | 10, 11, 12, 13, 14           | 10, 11, 12, 13, 14           |
-| MySQL               | 5.7, 8                       | 5.7, 8                       |
-| SQLite              | 3.15.0+                      | 3.15.0+                      |
-| MSSQL               | 2017(\*), 2019 (\*)          | 2017(\*), 2019 (\*)          |
+|             | Main version (dev)     | Stable version (2.7.0)    |
+|-------------|------------------------|---------------------------|
+| Python      | 3.8, 3.9, 3.10, 3.11   | 3.8, 3.9, 3.10, 3.11      |
+| Platform    | AMD64/ARM64(\*)        | AMD64/ARM64(\*)           |
+| Kubernetes  | 1.24, 1.25, 1.26, 1.27 | 1.24, 1.25, 1.26, 1.27    |
+| PostgreSQL  | 11, 12, 13, 14, 15     | 11, 12, 13, 14, 15        |
+| MySQL       | 5.7, 8.0, 8.1          | 5.7, 8.0                  |
+| SQLite      | 3.15.0+                | 3.15.0+                   |
+| MSSQL       | 2017(\*), 2019(\*)     | 2017(\*), 2019(\*)        |
 
 \* Experimental
 
@@ -104,15 +105,14 @@ MariaDB is not tested/recommended.
 **Note**: SQLite is used in Airflow tests. Do not use it in production. We recommend
 using the latest stable version of SQLite for local development.
 
-**Note**: Airflow currently can be run on POSIX-compliant Operating Systems. For development it is regularly
-tested on fairly modern Linux Distros and recent versions of MacOS.
+**Note**: Airflow currently can be run on POSIX-compliant Operating Systems. For development, it is regularly
+tested on fairly modern Linux Distros and recent versions of macOS.
 On Windows you can run it via WSL2 (Windows Subsystem for Linux 2) or via Linux Containers.
-The work to add Windows support is tracked via [#10388](https://github.com/apache/airflow/issues/10388) but
+The work to add Windows support is tracked via [#10388](https://github.com/apache/airflow/issues/10388), but
 it is not a high priority. You should only use Linux-based distros as "Production" execution environment
 as this is the only environment that is supported. The only distro that is used in our CI tests and that
 is used in the [Community managed DockerHub image](https://hub.docker.com/p/apache/airflow) is
 `Debian Bullseye`.
-
 
 ## Getting started
 
@@ -153,20 +153,25 @@ While it is possible to install Airflow with tools like [Poetry](https://python-
 `pip` - especially when it comes to constraint vs. requirements management.
 Installing via `Poetry` or `pip-tools` is not currently supported.
 
+There are known issues with ``bazel`` that might lead to circular dependencies when using it to install
+Airflow. Please switch to ``pip`` if you encounter such problems. ``Bazel`` community works on fixing
+the problem in `this PR <https://github.com/bazelbuild/rules_python/pull/1166>`_ so it might be that
+newer versions of ``bazel`` will handle it.
+
 If you wish to install Airflow using those tools, you should use the constraint files and convert
 them to the appropriate format and workflow that your tool requires.
 
 
 ```bash
-pip install 'apache-airflow==2.4.3' \
- --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.4.3/constraints-3.7.txt"
+pip install 'apache-airflow==2.7.0' \
+ --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.7.0/constraints-3.8.txt"
 ```
 
 2. Installing with extras (i.e., postgres, google)
 
 ```bash
-pip install 'apache-airflow[postgres,google]==2.4.3' \
- --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.4.3/constraints-3.7.txt"
+pip install 'apache-airflow[postgres,google]==2.7.0' \
+ --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.7.0/constraints-3.8.txt"
 ```
 
 For information on installing provider packages, check
@@ -253,14 +258,18 @@ packages:
   is a breaking change for provider because installing the new provider might automatically
   upgrade Airflow (which might be an undesired side effect of upgrading provider).
 * **Airflow Helm Chart**: SemVer rules apply to changes in the chart only. SemVer MAJOR and MINOR
-  versions for the chart are independent from the Airflow version. We aim to keep backwards
+  versions for the chart are independent of the Airflow version. We aim to keep backwards
   compatibility of the Helm Chart with all released Airflow 2 versions, but some new features might
   only work starting from specific Airflow releases. We might however limit the Helm
   Chart to depend on minimal Airflow version.
 * **Airflow API clients**: SemVer MAJOR and MINOR versions follow MAJOR and MINOR versions of Airflow.
   The first MAJOR or MINOR X.Y.0 release of Airflow should always be followed by X.Y.0 release of
-  all clients. The clients then can release their own PATCH releases with bugfixes,
-  independently of Airflow PATCH releases.
+  all clients. An airflow PATCH X.Y.Z release can be followed by a PATCH release of API clients, only
+  if this PATCH is relevant to the clients.
+  The clients then can release their own PATCH releases with bugfixes, independently of Airflow PATCH releases.
+  As a consequence, each API client will have its own PATCH version that may or may not be in sync with the Airflow
+  PATCH version. For a specific MAJOR/MINOR Airflow version, users should favor the latest PATCH version of clients
+  independently of their Airflow PATCH version.
 
 ## Version Life Cycle
 
@@ -271,7 +280,7 @@ Apache Airflow version life cycle:
 
 | Version   | Current Patch/Minor   | State     | First Release   | Limited Support   | EOL/Terminated   |
 |-----------|-----------------------|-----------|-----------------|-------------------|------------------|
-| 2         | 2.4.3                 | Supported | Dec 17, 2020    | TBD               | TBD              |
+| 2         | 2.7.0                 | Supported | Dec 17, 2020    | TBD               | TBD              |
 | 1.10      | 1.10.15               | EOL       | Aug 27, 2018    | Dec 17, 2020      | June 17, 2021    |
 | 1.9       | 1.9.0                 | EOL       | Jan 03, 2018    | Aug 27, 2018      | Aug 27, 2018     |
 | 1.8       | 1.8.2                 | EOL       | Mar 19, 2017    | Jan 03, 2018      | Jan 03, 2018     |
@@ -294,20 +303,16 @@ They are based on the official release schedule of Python and Kubernetes, nicely
 1. We drop support for Python and Kubernetes versions when they reach EOL. Except for Kubernetes, a
    version stays supported by Airflow if two major cloud providers still provide support for it. We drop
    support for those EOL versions in main right after EOL date, and it is effectively removed when we release
-   the first new MINOR (Or MAJOR if there is no new MINOR version) of Airflow. For example, for Python 3.7 it
+   the first new MINOR (Or MAJOR if there is no new MINOR version) of Airflow. For example, for Python 3.8 it
    means that we will drop support in main right after 27.06.2023, and the first MAJOR or MINOR version of
    Airflow released after will not have it.
 
-2. The "oldest" supported version of Python/Kubernetes is the default one until we decide to switch to
-   later version. "Default" is only meaningful in terms of "smoke tests" in CI PRs, which are run using this
-   default version and the default reference image available. Currently `apache/airflow:latest`
-   and `apache/airflow:2.4.3` images are Python 3.7 images. This means that default reference image will
-   become the default at the time when we start preparing for dropping 3.7 support which is few months
-   before the end of life for Python 3.7.
-
-3. We support a new version of Python/Kubernetes in main after they are officially released, as soon as we
+2. We support a new version of Python/Kubernetes in main after they are officially released, as soon as we
    make them work in our CI pipeline (which might not be immediate due to dependencies catching up with
    new versions of Python mostly) we release new images/support in Airflow based on the working CI setup.
+
+3. This policy is best-effort which means there may be situations where we might terminate support earlier
+   if circumstances require it.
 
 ## Base OS support for reference Airflow images
 
@@ -317,9 +322,9 @@ we publish an Apache Airflow release. Those images contain:
 * Base OS with necessary packages to install Airflow (stable Debian OS)
 * Base Python installation in versions supported at the time of release for the MINOR version of
   Airflow released (so there could be different versions for 2.3 and 2.2 line for example)
-* Libraries required to connect to suppoerted Databases (again the set of databases supported depends
-  on the MINOR version of Airflow.
-* Predefined set of popular providers (for details see the [Dockerfile](Dockerfile)).
+* Libraries required to connect to supported Databases (again the set of databases supported depends
+  on the MINOR version of Airflow)
+* Predefined set of popular providers (for details see the [Dockerfile](https://raw.githubusercontent.com/apache/airflow/main/Dockerfile)).
 * Possibility of building your own, custom image where the user can choose their own set of providers
   and libraries (see [Building the image](https://airflow.apache.org/docs/docker-stack/build.html))
 * In the future Airflow might also support a "slim" version without providers nor database clients installed
@@ -383,82 +388,26 @@ The important dependencies are:
    libraries, and we should update them together
 * `celery`: Celery is crucial component of Airflow as it used for CeleryExecutor (and similar). Celery
    [follows SemVer](https://docs.celeryq.dev/en/stable/contributing.html?highlight=semver#versions), so
-   we should upper-bound it to the next MAJOR version. Also when we bump the upper version of the library,
-   we should make sure Celery Provider minimum Airflow version is updated).
+   we should upper-bound it to the next MAJOR version. Also, when we bump the upper version of the library,
+   we should make sure Celery Provider minimum Airflow version is updated.
 * `kubernetes`: Kubernetes is a crucial component of Airflow as it is used for the KubernetesExecutor
    (and similar). Kubernetes Python library [follows SemVer](https://github.com/kubernetes-client/python#compatibility),
-   so we should upper-bound it to the next MAJOR version. Also when we bump the upper version of the library,
+   so we should upper-bound it to the next MAJOR version. Also, when we bump the upper version of the library,
    we should make sure Kubernetes Provider minimum Airflow version is updated.
 
 ### Approach for dependencies in Airflow Providers and extras
 
-Those `extras` and `providers` dependencies are maintained in `setup.py`.
+The main part of the Airflow is the Airflow Core, but the power of Airflow also comes from a number of
+providers that extend the core functionality and are released separately, even if we keep them (for now)
+in the same monorepo for convenience. You can read more about the providers in the
+[Providers documentation](https://airflow.apache.org/docs/apache-airflow-providers/index.html). We also
+have set of policies implemented for maintaining and releasing community-managed providers as well
+as the approach for community vs. 3rd party providers in the [providers](https://github.com/apache/airflow/blob/main/PROVIDERS.rst) document.
+
+Those `extras` and `providers` dependencies are maintained in `provider.yaml` of each provider.
 
 By default, we should not upper-bound dependencies for providers, however each provider's maintainer
-might decide to add additional limits (and justify them with comment)
-
-## Release process for Providers
-
-Providers released by the community (with roughly monthly cadence) have
-limitation of a minimum supported version of Airflow. The minimum version of
-Airflow is the `MINOR` version (2.2, 2.3 etc.) indicating that the providers
-might use features that appeared in this release. The default support timespan
-for the minimum version of Airflow (there could be justified exceptions) is
-that we increase the minimum Airflow version, when 12 months passed since the
-first release for the MINOR version of Airflow.
-
-For example this means that by default we upgrade the minimum version of Airflow supported by providers
-to 2.3.0 in the first Provider's release after 11th of October 2022 (11th of October 2021 is the date when the
-first `PATCHLEVEL` of 2.2 (2.2.0) has been released.
-
-Providers are often connected with some stakeholders that are vitally interested in maintaining backwards
-compatibilities in their integrations (for example cloud providers, or specific service providers). But,
-we are also bound with the [Apache Software Foundation release policy](https://www.apache.org/legal/release-policy.html)
-which describes who releases, and how to release the ASF software. The provider's governance model is something we name
-"mixed governance" - where we follow the release policies, while the burden of maintaining and testing
-the cherry-picked versions is on those who commit to perform the cherry-picks and make PRs to older
-branches.
-
-The "mixed governance" (optional, per-provider) means that:
-
-* The Airflow Community and release manager decide when to release those providers.
-  This is fully managed by the community and the usual release-management process following the
-  [Apache Software Foundation release policy](https://www.apache.org/legal/release-policy.html)
-* The contributors (who might or might not be direct stakeholders in the provider) will carry the burden
-  of cherry-picking and testing the older versions of providers.
-* There is no "selection" and acceptance process to determine which version of the provider is released.
-  It is determined by the actions of contributors raising the PR with cherry-picked changes and it follows
-  the usual PR review process where maintainer approves (or not) and merges (or not) such PR. Simply
-  speaking - the completed action of cherry-picking and testing the older version of the provider make
-  it eligible to be released. Unless there is someone who volunteers and perform the cherry-picking and
-  testing, the provider is not released.
-* Branches to raise PR against are created when a contributor commits to perform the cherry-picking
-  (as a comment in PR to cherry-pick for example)
-
-Usually, community effort is focused on the most recent version of each provider. The community approach is
-that we should rather aggressively remove deprecations in "major" versions of the providers - whenever
-there is an opportunity to increase major version of a provider, we attempt to remove all deprecations.
-However, sometimes there is a contributor (who might or might not represent stakeholder),
-willing to make their effort on cherry-picking and testing the non-breaking changes to a selected,
-previous major branch of the provider. This results in releasing at most two versions of a
-provider at a time:
-
-* potentially breaking "latest" major version
-* selected past major version with non-breaking changes applied by the contributor
-
-Cherry-picking such changes follows the same process for releasing Airflow
-patch-level releases for a previous minor Airflow version. Usually such cherry-picking is done when
-there is an important bugfix and the latest version contains breaking changes that are not
-coupled with the bugfix. Releasing them together in the latest version of the provider effectively couples
-them, and therefore they're released separately. The cherry-picked changes have to be merged by the committer following the usual rules of the
-community.
-
-There is no obligation to cherry-pick and release older versions of the providers.
-The community continues to release such older versions of the providers for as long as there is an effort
-of the contributors to perform the cherry-picks and carry-on testing of the older provider version.
-
-The availability of stakeholder that can manage "service-oriented" maintenance and agrees to such a
-responsibility, will also drive our willingness to accept future, new providers to become community managed.
+might decide to add additional limits (and justify them with comment).
 
 ## Contributing
 
@@ -481,7 +430,7 @@ If you would like to become a maintainer, please review the Apache Airflow
 
 ## Can I use the Apache Airflow logo in my presentation?
 
-Yes! Be sure to abide by the Apache Foundation [trademark policies](https://www.apache.org/foundation/marks/#books) and the Apache Airflow [Brandbook](https://cwiki.apache.org/confluence/display/AIRFLOW/Brandbook). The most up to date logos are found in [this repo](/docs/apache-airflow/img/logos) and on the Apache Software Foundation [website](https://www.apache.org/logos/about.html).
+Yes! Be sure to abide by the Apache Foundation [trademark policies](https://www.apache.org/foundation/marks/#books) and the Apache Airflow [Brandbook](https://cwiki.apache.org/confluence/display/AIRFLOW/Brandbook). The most up-to-date logos are found in [this repo](https://github.com/apache/airflow/tree/main/docs/apache-airflow/img/logos/) and on the Apache Software Foundation [website](https://www.apache.org/logos/about.html).
 
 ## Airflow merchandise
 

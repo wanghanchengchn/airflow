@@ -2113,7 +2113,6 @@ class TaskInstance(Base, LoggingMixin):
             Stats.incr("previously_succeeded", tags=ti.stats_tags)
 
         if not mark_success:
-            self.log.info(f"if not mark_success")
             # Firstly find non-runnable and non-requeueable tis.
             # Since mark_success is not set, we do nothing.
             non_requeueable_dep_context = DepContext(
@@ -2128,7 +2127,6 @@ class TaskInstance(Base, LoggingMixin):
             if not ti.are_dependencies_met(
                 dep_context=non_requeueable_dep_context, session=session, verbose=True
             ):
-                self.log.info(f"if not dependencies met")
                 session.commit()
                 return False
 
@@ -2168,7 +2166,6 @@ class TaskInstance(Base, LoggingMixin):
                     ti.max_tries + 1,
                 )
                 ti.queued_dttm = timezone.utcnow()
-                self.log.info(f"if not are dependencies met")
                 session.merge(ti)
                 session.commit()
                 return False

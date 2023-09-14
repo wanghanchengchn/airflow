@@ -1,4 +1,4 @@
-FROM apache/airflow:2.7.0
+FROM apache/airflow:2.8.0
 STOPSIGNAL SIGINT
 RUN pip install grpcio grpcio-tools
 COPY airflow-dags /opt/airflow/dags

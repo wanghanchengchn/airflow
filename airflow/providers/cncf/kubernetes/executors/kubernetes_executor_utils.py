@@ -397,9 +397,6 @@ class AirflowKubernetesScheduler(LoggingMixin):
             'run_id': run_id,
             'map_index': map_index,
         }
-        
-        run_pod_timer = Timer("executor_run_pod_async", annotations)
-        run_pod_timer.time("function_entry")
         """Runs POD asynchronously."""
         sanitized_pod = self.kube_client.api_client.sanitize_for_serialization(pod)
         json_pod = json.dumps(sanitized_pod, indent=2)
@@ -420,9 +417,9 @@ class AirflowKubernetesScheduler(LoggingMixin):
             timer.time("before_post_request")
             try: 
                 r = invoke_task(target=endpoint, args=args)
-                timing  = pickle.loads(r.timing)
-                self.log.info(f"execution_timing: {timing}")
                 timer.time("after_post_request")
+                timing  = pickle.loads(r.timing)
+                
                 
             except grpc.RpcError as e:
                 self.log.info(f"Airflow Worker {endpoint} Failed with error {e}")
@@ -433,6 +430,7 @@ class AirflowKubernetesScheduler(LoggingMixin):
             # state 'None' indicates success in this context
             self.watcher_queue.put(("airflow-worker-0", "airflow", None, annotations, 0))
             timer.time("function_exit")
+            self.log.info(f"TIMING: {json.dumps({'function': 'worker_execution', 'times': [timing['execution_time']], 'timestamp_annotations': annotations})}")
             self.log.info(timer.get_log_line())
             return
         

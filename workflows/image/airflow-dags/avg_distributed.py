@@ -20,13 +20,15 @@ def timing(f):
     schedule_interval=None,
     start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
     catchup=False,
+    is_paused_upon_creation=False
 )
 def compute_avg_distributed():
     @task
     @timing
-    def extract(params=None):
+    def extract():
+        params = [1, 2, 3, 4]
         logging.info(f"params: {params}")
-        return params["data"]
+        return params
 
     @task
     @timing
