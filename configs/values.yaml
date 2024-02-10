@@ -79,7 +79,7 @@ airflowVersion: "2.8.0"
 # Images
 images:
   airflow:
-    repository: nehalem90/airflow
+    repository: wanghanchengchn/airflow
     tag: latest
     # Specifying digest takes precedence over tag.
     digest: ~
