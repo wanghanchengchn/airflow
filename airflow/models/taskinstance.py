@@ -2187,6 +2187,8 @@ class TaskInstance(Base, LoggingMixin):
             session.merge(ti).task = task
         session.commit()
 
+        cls.logger().info("WHC: set state to RUNNING")
+        
         # Closing all pooled connections to prevent
         # "max number of connections reached"
         settings.engine.dispose()  # type: ignore
@@ -2341,6 +2343,8 @@ class TaskInstance(Base, LoggingMixin):
                 if not test_mode:
                     self.refresh_from_db(lock_for_update=True, session=session)
                 self.state = TaskInstanceState.SUCCESS
+                self.log.info("WHC: set state to SUCCESS")
+                
             except TaskDeferred as defer:
                 # The task has signalled it wants to defer execution based on
                 # a trigger.
@@ -3356,6 +3360,7 @@ class TaskInstance(Base, LoggingMixin):
                 if not hasattr(schedulable_ti, "task"):
                     schedulable_ti.task = task.dag.get_task(schedulable_ti.task_id)
 
+            cls.logger().info("WHC: %s downstream tasks scheduled", schedulable_tis)
             num = dag_run.schedule_tis(schedulable_tis, session=session, max_tis_per_query=max_tis_per_query)
             cls.logger().info("%d downstream tasks scheduled from follow-on schedule check", num)
 

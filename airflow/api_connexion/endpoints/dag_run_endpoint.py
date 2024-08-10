@@ -316,6 +316,10 @@ def post_dag_run(*, dag_id: str, session: Session = NEW_SESSION) -> APIResponse:
         )
         .limit(1)
     )
+    
+    import logging
+    logging.info("WHC: run_id: %s", run_id)
+    
     if not dagrun_instance:
         try:
             dag = get_airflow_app().dag_bag.get_dag(dag_id)

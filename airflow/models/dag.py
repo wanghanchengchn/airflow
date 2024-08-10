@@ -2990,6 +2990,9 @@ class DAG(LoggingMixin):
             creating_job_id=creating_job_id,
             data_interval=data_interval,
         )
+        
+        self.log.info("WHC: Creating DagRun %s", run.dag_id)
+        
         session.add(run)
         session.flush()
 

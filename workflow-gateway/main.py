@@ -93,22 +93,21 @@ def main():
     username='admin',
     password='admin', 
     )
-    dag_id = "compute_avg_distributed"
+    dag_id = "dag_w1_d2"
     api_client = airflow_client.client.ApiClient(configuration)
-    start_trigger = perf_counter()
+    # start_trigger = perf_counter()
     response = trigger_dag(api_client, dag_id)
-    finish_trigger = perf_counter()
+    # finish_trigger = perf_counter()
     
-    run_id = response['dag_run_id']
-    extract_id = 'extract'
-    count_id = 'compute_count'
-    sum_id = 'compute_sum'
-    avg_id = 'do_avg'
+    # run_id = response['dag_run_id']
+    # extract_id = 'extract'
+    # count_id = 'compute_count'
+    # sum_id = 'compute_sum'
+    # avg_id = 'do_avg'
     
-    got_result_time = get_xcom_values(api_client, dag_id, run_id, [extract_id, count_id, sum_id, avg_id])
+    # got_result_time = get_xcom_values(api_client, dag_id, run_id, [extract_id, count_id, sum_id, avg_id])
     
-    print(f"End-to-end Latency: {round(got_result_time - finish_trigger,2)} second")
+    # print(f"End-to-end Latency: {round(got_result_time - finish_trigger,2)} second")
 
-    
 if __name__ == "__main__":
     main()

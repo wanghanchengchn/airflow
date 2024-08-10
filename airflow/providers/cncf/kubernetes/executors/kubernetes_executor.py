@@ -423,7 +423,7 @@ class KubernetesExecutor(BaseExecutor):
         with contextlib.suppress(Empty):
             for _ in range(self.kube_config.worker_pods_creation_batch_size):
                 task = self.task_queue.get_nowait()
-
+                self.log.info("WHC: Executing next task: %s", task)
                 try:
                     self.kube_scheduler.run_next(task)
                 except PodReconciliationError as e:
@@ -506,7 +506,8 @@ class KubernetesExecutor(BaseExecutor):
 
             state = session.scalar(select(TaskInstance.state).where(TaskInstance.filter_for_tis([key])))
             state = TaskInstanceState(state) if state else None
-
+        
+        self.log.info("WHC: Changing state of %s to %s in DRAM", key, state)
         self.event_buffer[key] = state, None
 
     @staticmethod

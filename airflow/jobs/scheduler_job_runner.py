@@ -601,6 +601,7 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
         if executable_tis:
             task_instance_str = "\n".join(f"\t{x!r}" for x in executable_tis)
             self.log.info("Setting the following tasks to queued state:\n%s", task_instance_str)
+            self.log.info("WHC: Setting the following tasks to queued state: %s", task_instance_str)
 
             # set TIs to queued state
             filter_for_tis = TI.filter_for_tis(executable_tis)
@@ -753,6 +754,8 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
                 ti.pid,
             )
 
+            self.log.info("WHC: set task %s state from %s to %s", ti.task_id, ti.state, state)
+            
             # There are two scenarios why the same TI with the same try_number is queued
             # after executor is finished with it:
             # 1) the TI was killed externally and it had no time to mark itself failed
@@ -1400,6 +1403,7 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
                 )
             else:
                 active_runs_of_dags[dag_run.dag_id] += 1
+                self.log.info(f"WHC: update dag_run {dag_run} from {dag_run.state} to RUNNING")
                 _update_state(dag, dag_run)
                 dag_run.notify_dagrun_state_changed()
 
@@ -1437,6 +1441,8 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
             with_row_locks(query, of=DagModel, session=session, **skip_locked(session=session))
         ).one_or_none()
 
+        self.log.info(f"WHC: enter {dag_run.dag} _schedule_dag_run()")
+        
         if not dag:
             self.log.error("Couldn't find DAG %s in DAG bag or database!", dag_run.dag_id)
             return callback

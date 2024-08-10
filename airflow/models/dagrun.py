@@ -691,6 +691,11 @@ class DagRun(Base, LoggingMixin):
             finished_tis = info.finished_tis
             unfinished = _UnfinishedStates.calculate(info.unfinished_tis)
 
+            self.log.info(f"WHC: schedulable_tis {schedulable_tis}")
+            self.log.info(f"WHC: changed_tis {changed_tis}")
+            self.log.info(f"WHC: finished_tis {finished_tis}")
+            self.log.info(f"WHC: unfinished {unfinished}")
+            
             if unfinished.should_schedule:
                 are_runnable_tasks = schedulable_tis or changed_tis
                 # small speed up
@@ -794,6 +799,7 @@ class DagRun(Base, LoggingMixin):
                 self.data_interval_end,
                 self.dag_hash,
             )
+            self.log.info("WHC: Marking run %s state=%s", self.dag_id, self._state)
             session.flush()
 
         self._emit_true_scheduling_delay_stats_for_finished_state(finished_tis)
@@ -1432,7 +1438,8 @@ class DagRun(Base, LoggingMixin):
                     .values(state=TaskInstanceState.SCHEDULED)
                     .execution_options(synchronize_session=False)
                 ).rowcount
-
+                self.log.info("WHC: set task %s to SCHEDULED state", schedulable_ti_ids_chunk) 
+                            
         # Tasks using EmptyOperator should not be executed, mark them as success
         if dummy_ti_ids:
             dummy_ti_ids_chunks = chunks(dummy_ti_ids, max_tis_per_query or len(dummy_ti_ids))
