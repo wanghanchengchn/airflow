@@ -29,7 +29,7 @@ def dag_w1_d1():
         return sleep_time_ms
     
     # specify data flow
-    sleep_time_ms = 2048 / 1
+    sleep_time_ms = 1000
     func_1_1(sleep_time_ms)
     
 # execute dag

@@ -601,7 +601,6 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
         if executable_tis:
             task_instance_str = "\n".join(f"\t{x!r}" for x in executable_tis)
             self.log.info("Setting the following tasks to queued state:\n%s", task_instance_str)
-            self.log.info("WHC: Setting the following tasks to queued state: %s", task_instance_str)
 
             # set TIs to queued state
             filter_for_tis = TI.filter_for_tis(executable_tis)
@@ -621,6 +620,8 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
             for ti in executable_tis:
                 ti.emit_state_change_metric(TaskInstanceState.QUEUED)
 
+            self.log.info("WHC: WHC_E2E_BREAKDOWN: Already setting the following tasks to queued state: %s", task_instance_str)
+            
         for ti in executable_tis:
             make_transient(ti)
         return executable_tis
@@ -754,7 +755,7 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
                 ti.pid,
             )
 
-            self.log.info("WHC: set task %s state from %s to %s", ti.task_id, ti.state, state)
+            self.log.info("WHCIMP: set task %s state from %s to %s", ti.task_id, ti.state, state)
             
             # There are two scenarios why the same TI with the same try_number is queued
             # after executor is finished with it:
@@ -1403,7 +1404,7 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
                 )
             else:
                 active_runs_of_dags[dag_run.dag_id] += 1
-                self.log.info(f"WHC: update dag_run {dag_run} from {dag_run.state} to RUNNING")
+                self.log.info(f"WHCIMP: WHC_E2E_LATENCY: WHC_E2E_BREAKDOWN: update dag_run {dag_run} from {dag_run.state} to RUNNING")
                 _update_state(dag, dag_run)
                 dag_run.notify_dagrun_state_changed()
 

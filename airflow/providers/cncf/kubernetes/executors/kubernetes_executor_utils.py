@@ -430,7 +430,7 @@ class AirflowKubernetesScheduler(LoggingMixin):
             # state 'None' indicates success in this context
             self.watcher_queue.put(("airflow-worker-0", "airflow", None, annotations, 0))
             timer.time("function_exit")
-            self.log.info(f"TIMING: {json.dumps({'function': 'worker_execution', 'times': [timing['execution_time']], 'timestamp_annotations': annotations})}")
+            self.log.info(f"WHCIMP: TIMING: {json.dumps({'function': 'worker_execution', 'times': [timing['execution_time']], 'timestamp_annotations': annotations})}")
             self.log.info(timer.get_log_line())
             return
         

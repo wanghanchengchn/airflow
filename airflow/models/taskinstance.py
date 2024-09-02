@@ -2187,7 +2187,7 @@ class TaskInstance(Base, LoggingMixin):
             session.merge(ti).task = task
         session.commit()
 
-        cls.logger().info("WHC: set state to RUNNING")
+        cls.logger().info("WHC: WHC_E2E_BREAKDOWN: set state to RUNNING")
         
         # Closing all pooled connections to prevent
         # "max number of connections reached"
@@ -2343,7 +2343,7 @@ class TaskInstance(Base, LoggingMixin):
                 if not test_mode:
                     self.refresh_from_db(lock_for_update=True, session=session)
                 self.state = TaskInstanceState.SUCCESS
-                self.log.info("WHC: set state to SUCCESS")
+                self.log.info("WHC: WHC_E2E_BREAKDOWN: set state to SUCCESS")
                 
             except TaskDeferred as defer:
                 # The task has signalled it wants to defer execution based on

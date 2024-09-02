@@ -11,6 +11,8 @@ from airflow_client.client.model.error import Error
 
 import json
 from contextlib import suppress
+import argparse
+
 # The client must use the authentication and authorization parameters
 # in accordance with the API server security policy.
 # Examples for each auth method are provided below, use the example that
@@ -93,7 +95,12 @@ def main():
     username='admin',
     password='admin', 
     )
-    dag_id = "dag_w1_d2"
+    
+    parser = argparse.ArgumentParser(description="Process dag_id to trigger")
+    parser.add_argument("dag_id", type=str, help="dag_id to trigger")
+    args = parser.parse_args()
+    dag_id = args.dag_id
+    
     api_client = airflow_client.client.ApiClient(configuration)
     # start_trigger = perf_counter()
     response = trigger_dag(api_client, dag_id)

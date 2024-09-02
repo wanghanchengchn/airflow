@@ -119,7 +119,7 @@ def dag_w1_d16():
         return sleep_time_ms
     
     # specify data flow
-    sleep_time_ms = 4096 / 16
+    sleep_time_ms = 63
     func_1_1_output = func_1_1(sleep_time_ms)
     func_1_2_output = func_1_2(func_1_1_output)
     func_1_3_output = func_1_3(func_1_2_output)

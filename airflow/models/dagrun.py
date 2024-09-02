@@ -799,7 +799,7 @@ class DagRun(Base, LoggingMixin):
                 self.data_interval_end,
                 self.dag_hash,
             )
-            self.log.info("WHC: Marking run %s state=%s", self.dag_id, self._state)
+            self.log.info("WHC: WHC_E2E_LATENCY: WHC_E2E_BREAKDOWN: Marking run %s state=%s", self.dag_id, self._state)
             session.flush()
 
         self._emit_true_scheduling_delay_stats_for_finished_state(finished_tis)
@@ -1438,7 +1438,7 @@ class DagRun(Base, LoggingMixin):
                     .values(state=TaskInstanceState.SCHEDULED)
                     .execution_options(synchronize_session=False)
                 ).rowcount
-                self.log.info("WHC: set task %s to SCHEDULED state", schedulable_ti_ids_chunk) 
+                self.log.info("WHC: WHC_E2E_BREAKDOWN: already set task %s to SCHEDULED state", schedulable_ti_ids_chunk) 
                             
         # Tasks using EmptyOperator should not be executed, mark them as success
         if dummy_ti_ids:

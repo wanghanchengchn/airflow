@@ -48,3 +48,4 @@ spec:
     metadata:
       annotations:
         autoscaling.knative.dev/window: "60s"
+        autoscaling.knative.dev/minScale: "1"

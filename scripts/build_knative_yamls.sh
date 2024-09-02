@@ -6,3 +6,11 @@ mkdir -p ./workflows/knative_yamls
 for dag_dir in "$tmpdir"/*; do
 	cp -r "$dag_dir" ./workflows/knative_yamls/
 done
+
+find ./workflows/knative_yamls -name "*.yaml" -type f | while read -r file; do
+	sed -i -e '$a\' "$file"
+    echo "        autoscaling.knative.dev/minScale: \"1\"" >> "$file"
+    echo "Modified $file"
+done
+
+echo "All YAML files have been processed."
