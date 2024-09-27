@@ -21,14 +21,17 @@ echo "Deploying dag_w1_d1"
 echo "Deploying dag_w1_d2"
 ./scripts/deploy_workflow.sh dag_w1_d2
 
-echo "Deploying dag_w1_d4"
-./scripts/deploy_workflow.sh dag_w1_d4
+echo "Deploying benchmark_w1_d2"
+./scripts/deploy_workflow.sh benchmark_w1_d2
 
-echo "Deploying dag_w1_d8"
-./scripts/deploy_workflow.sh dag_w1_d8
+# echo "Deploying dag_w1_d4"
+# ./scripts/deploy_workflow.sh dag_w1_d4
 
-echo "Deploying dag_w1_d16"
-./scripts/deploy_workflow.sh dag_w1_d16
+# echo "Deploying dag_w1_d8"
+# ./scripts/deploy_workflow.sh dag_w1_d8
 
-echo "Deploying dag_w1_d32"
-./scripts/deploy_workflow.sh dag_w1_d32
+# echo "Deploying dag_w1_d16"
+# ./scripts/deploy_workflow.sh dag_w1_d16
+
+# echo "Deploying dag_w1_d32"
+# ./scripts/deploy_workflow.sh dag_w1_d32

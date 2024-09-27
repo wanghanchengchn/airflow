@@ -626,6 +626,34 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
             make_transient(ti)
         return executable_tis
 
+    # def _enqueue_task_instances_with_queued_state(self, task_instances: list[TI], session: Session) -> None:
+    #     """
+    #     Enqueue task_instances which should have been set to queued with the executor.
+
+    #     :param task_instances: TaskInstances to enqueue
+    #     :param session: The session object
+    #     """
+    #     # actually enqueue them
+    #     for ti in task_instances:
+    #         if ti.dag_run.state in State.finished_dr_states:
+    #             ti.set_state(None, session=session)
+    #             continue
+    #         command = ti.command_as_list(
+    #             local=True,
+    #             pickle_id=ti.dag_model.pickle_id,
+    #         )
+
+    #         priority = ti.priority_weight
+    #         queue = ti.queue
+    #         self.log.info("Sending %s to executor with priority %s and queue %s", ti.key, priority, queue)
+
+    #         self.job.executor.queue_command(
+    #             ti,
+    #             command,
+    #             priority=priority,
+    #             queue=queue,
+    #         )
+
     def _enqueue_task_instances_with_queued_state(self, task_instances: list[TI], session: Session) -> None:
         """
         Enqueue task_instances which should have been set to queued with the executor.
@@ -633,6 +661,7 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
         :param task_instances: TaskInstances to enqueue
         :param session: The session object
         """
+        task_tuples = []
         # actually enqueue them
         for ti in task_instances:
             if ti.dag_run.state in State.finished_dr_states:
@@ -645,14 +674,14 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
 
             priority = ti.priority_weight
             queue = ti.queue
-            self.log.info("Sending %s to executor with priority %s and queue %s", ti.key, priority, queue)
+            key = ti.key
+            executor_config = ti.executor_config
+            
+            self.log.info("Sending %s to executor with command %s, queue %s, executor_config %s and priority %s", key, command, queue, executor_config, priority)
 
-            self.job.executor.queue_command(
-                ti,
-                command,
-                priority=priority,
-                queue=queue,
-            )
+            task_tuples.append((key, command, queue, executor_config))
+            
+        self.job.executor._my_process_tasks(task_tuples)
 
     def _critical_section_enqueue_task_instances(self, session: Session) -> int:
         """

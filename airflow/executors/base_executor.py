@@ -257,6 +257,9 @@ class BaseExecutor(LoggingMixin):
         :param open_slots: Number of open slots
         """
         sorted_queue = self.order_queued_tasks_by_priority()
+        
+        self.log.info("WHC: sorted_queue: %s len sorted_queue: %s", sorted_queue, len(sorted_queue))
+        
         task_tuples = []
 
         for _ in range(min((open_slots, len(self.queued_tasks)))):
@@ -297,7 +300,11 @@ class BaseExecutor(LoggingMixin):
             del self.queued_tasks[key]
             self.execute_async(key=key, command=command, queue=queue, executor_config=executor_config)
             self.running.add(key)
-
+    
+    def _my_process_tasks(self, task_tuples: list[TaskTuple]) -> None:
+        for key, command, queue, executor_config in task_tuples:
+            self.execute_async(key=key, command=command, queue=queue, executor_config=executor_config)
+            
     def change_state(self, key: TaskInstanceKey, state: TaskInstanceState, info=None) -> None:
         """
         Change state of the task.

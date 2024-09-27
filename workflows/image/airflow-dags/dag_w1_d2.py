@@ -25,12 +25,16 @@ def dag_w1_d2():
     @task
     @timing
     def func_1_1(sleep_time_ms):
+        if sleep_time_ms != 500:
+            raise ValueError("Sleep time is not 500 ms")
         t_module.sleep(sleep_time_ms / 1000)
         return sleep_time_ms
 
     @task
     @timing
     def func_1_2(sleep_time_ms):
+        if sleep_time_ms != 500:
+            raise ValueError("Sleep time is not 500 ms")
         t_module.sleep(sleep_time_ms / 1000)
         return sleep_time_ms
 
