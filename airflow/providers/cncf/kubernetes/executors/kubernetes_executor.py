@@ -313,6 +313,18 @@ class KubernetesExecutor(BaseExecutor):
 
     def start(self) -> None:
         """Start the executor."""
+        self.start_kube_client_scheduler()
+
+        self.event_scheduler = EventScheduler()
+        self.event_scheduler.call_regular_interval(
+            self.kube_config.worker_pods_queued_check_interval,
+            self.clear_not_launched_queued_tasks,
+        )
+        # We also call this at startup as that's the most likely time to see
+        # stuck queued tasks
+        self.clear_not_launched_queued_tasks()
+
+    def start_kube_client_scheduler(self) -> None:
         self.log.info("Start Kubernetes executor")
         self.scheduler_job_id = str(self.job_id)
         self.log.debug("Start with scheduler_job_id: %s", self.scheduler_job_id)
@@ -328,15 +340,6 @@ class KubernetesExecutor(BaseExecutor):
             kube_client=self.kube_client,
             scheduler_job_id=self.scheduler_job_id,
         )
-        self.event_scheduler = EventScheduler()
-
-        self.event_scheduler.call_regular_interval(
-            self.kube_config.worker_pods_queued_check_interval,
-            self.clear_not_launched_queued_tasks,
-        )
-        # We also call this at startup as that's the most likely time to see
-        # stuck queued tasks
-        self.clear_not_launched_queued_tasks()
 
     def execute_async(
         self,

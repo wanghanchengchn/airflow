@@ -24,17 +24,20 @@ import psutil
 
 from airflow.configuration import conf
 from airflow.exceptions import AirflowException
+from airflow.executors.executor_constants import KUBERNETES_EXECUTOR
+from airflow.executors.executor_loader import ExecutorLoader
 from airflow.jobs.base_job_runner import BaseJobRunner
 from airflow.jobs.job import perform_heartbeat
 from airflow.models.taskinstance import TaskReturnCode
+from airflow.providers.cncf.kubernetes.executors.kubernetes_executor import KubernetesExecutor
 from airflow.stats import Stats
 from airflow.utils import timezone
 from airflow.utils.log.file_task_handler import _set_task_deferred_context_var
 from airflow.utils.log.logging_mixin import LoggingMixin
 from airflow.utils.net import get_hostname
 from airflow.utils.platform import IS_WINDOWS
-from airflow.utils.session import NEW_SESSION, provide_session
-from airflow.utils.state import TaskInstanceState
+from airflow.utils.session import NEW_SESSION, create_session, provide_session
+from airflow.utils.state import State, TaskInstanceState
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
@@ -110,6 +113,10 @@ class LocalTaskJobRunner(BaseJobRunner, LoggingMixin):
         self.terminating = False
 
         self._state_change_checks = 0
+        
+        # Executor for scheduling downstream tasks
+        # Keep in sync with the value of `executor` in `configs/values.yaml`
+        self.scheduler_executor: KubernetesExecutor = ExecutorLoader.load_executor(KUBERNETES_EXECUTOR)
 
     def _execute(self) -> int | None:
         from airflow.task.task_runner import get_task_runner
@@ -163,6 +170,9 @@ class LocalTaskJobRunner(BaseJobRunner, LoggingMixin):
 
         return_code = None
         try:
+            self.scheduler_executor.job_id = self.job.id
+            self.scheduler_executor.start_kube_client_scheduler()
+
             self.task_runner.start()
             local_task_job_heartbeat_sec = conf.getint("scheduler", "local_task_job_heartbeat_sec")
             if local_task_job_heartbeat_sec < 1:
@@ -218,6 +228,11 @@ class LocalTaskJobRunner(BaseJobRunner, LoggingMixin):
         finally:
             self.on_kill()
 
+            try:
+                self.scheduler_executor.end()
+            except Exception as e:
+                self.log.error("Error when ending scheduler executor: %s", e)
+            
     def handle_task_exit(self, return_code: int) -> None:
         """
         Handle case where self.task_runner exits by itself or is externally killed.
@@ -236,7 +251,34 @@ class LocalTaskJobRunner(BaseJobRunner, LoggingMixin):
 
         if not (self.task_instance.test_mode or is_deferral):
             if conf.getboolean("scheduler", "schedule_after_task_execution", fallback=True):
-                self.task_instance.schedule_downstream_tasks(max_tis_per_query=self.job.max_tis_per_query)
+                with create_session() as session:
+                    schedulable_tis = self.task_instance.schedule_downstream_tasks(session=session, max_tis_per_query=self.job.max_tis_per_query)
+
+                    if schedulable_tis:
+                        task_tuples = []
+                        for ti in schedulable_tis:
+                            if ti.dag_run.state in State.finished_dr_states:
+                                ti.set_state(None)
+                                continue
+                            command = ti.command_as_list(
+                                local=True,
+                                pickle_id=ti.dag_model.pickle_id,
+                            )
+
+                            priority = ti.priority_weight
+                            queue = None
+                            key = ti.key
+                            executor_config = ti.executor_config
+
+                            self.log.info("Sending %s to executor with command %s, queue %s, executor_config %s and priority %s", key, command, queue, executor_config, priority)
+
+                            task_tuples.append((key, command, queue, executor_config))
+
+                            self.scheduler_executor._my_process_tasks(task_tuples)
+
+                        self.scheduler_executor.heartbeat()
+                    session.expunge_all()
+
 
     def on_kill(self):
         self.task_runner.terminate()

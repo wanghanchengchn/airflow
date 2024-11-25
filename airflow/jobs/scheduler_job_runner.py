@@ -29,7 +29,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from functools import lru_cache, partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Collection, Iterable, Iterator
+from typing import TYPE_CHECKING, Any, Callable, Collection, Iterable, Iterator, List, Tuple
 
 from sqlalchemy import and_, delete, func, not_, or_, select, text, update
 from sqlalchemy.exc import OperationalError
@@ -1152,55 +1152,57 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
             # Bulk fetch the currently active dag runs for the dags we are
             # examining, rather than making one query per DagRun
 
-            callback_tuples = self._schedule_all_dag_runs(guard, dag_runs, session)
+            self._schedule_all_dag_runs(guard, dag_runs, session)
+        
+        return 0
 
-        # Send the callbacks after we commit to ensure the context is up to date when it gets run
-        # cache saves time during scheduling of many dag_runs for same dag
-        cached_get_dag: Callable[[str], DAG | None] = lru_cache()(
-            partial(self.dagbag.get_dag, session=session)
-        )
-        for dag_run, callback_to_run in callback_tuples:
-            dag = cached_get_dag(dag_run.dag_id)
-            if dag:
-                # Sending callbacks there as in standalone_dag_processor they are adding to the database,
-                # so it must be done outside of prohibit_commit.
-                self._send_dag_callbacks_to_processor(dag, callback_to_run)
-            else:
-                self.log.error("DAG '%s' not found in serialized_dag table", dag_run.dag_id)
+        # # Send the callbacks after we commit to ensure the context is up to date when it gets run
+        # # cache saves time during scheduling of many dag_runs for same dag
+        # cached_get_dag: Callable[[str], DAG | None] = lru_cache()(
+        #     partial(self.dagbag.get_dag, session=session)
+        # )
+        # for dag_run, callback_to_run in callback_tuples:
+        #     dag = cached_get_dag(dag_run.dag_id)
+        #     if dag:
+        #         # Sending callbacks there as in standalone_dag_processor they are adding to the database,
+        #         # so it must be done outside of prohibit_commit.
+        #         self._send_dag_callbacks_to_processor(dag, callback_to_run)
+        #     else:
+        #         self.log.error("DAG '%s' not found in serialized_dag table", dag_run.dag_id)
 
-        with prohibit_commit(session) as guard:
-            # Without this, the session has an invalid view of the DB
-            session.expunge_all()
-            # END: schedule TIs
+        # with prohibit_commit(session) as guard:
+        #     # Without this, the session has an invalid view of the DB
+        #     session.expunge_all()
+        #     # END: schedule TIs
 
-            if self.job.executor.slots_available <= 0:
-                # We know we can't do anything here, so don't even try!
-                self.log.debug("Executor full, skipping critical section")
-                num_queued_tis = 0
-            else:
-                try:
-                    timer = Stats.timer("scheduler.critical_section_duration")
-                    timer.start()
+        #     if self.job.executor.slots_available <= 0:
+        #         # We know we can't do anything here, so don't even try!
+        #         self.log.debug("Executor full, skipping critical section")
+        #         num_queued_tis = 0
+        #     else:
+        #         try:
+        #             timer = Stats.timer("scheduler.critical_section_duration")
+        #             timer.start()
 
-                    # Find anything TIs in state SCHEDULED, try to send it to the executor directly (without ENQUEUE)
-                    num_queued_tis = self._critical_section_enqueue_task_instances(session=session)
+        #             # Find anything TIs in state SCHEDULED, try to send it to the executor directly (without ENQUEUE)
+        #             num_queued_tis = self._critical_section_enqueue_task_instances(session=session)
 
-                    # Make sure we only sent this metric if we obtained the lock, otherwise we'll skew the
-                    # metric, way down
-                    timer.stop(send=True)
-                except OperationalError as e:
-                    timer.stop(send=False)
+        #             # Make sure we only sent this metric if we obtained the lock, otherwise we'll skew the
+        #             # metric, way down
+        #             timer.stop(send=True)
+        #         except OperationalError as e:
+        #             timer.stop(send=False)
 
-                    if is_lock_not_available_error(error=e):
-                        self.log.debug("Critical section lock held by another Scheduler")
-                        Stats.incr("scheduler.critical_section_busy")
-                        session.rollback()
-                        return 0
-                    raise
+        #             if is_lock_not_available_error(error=e):
+        #                 self.log.debug("Critical section lock held by another Scheduler")
+        #                 Stats.incr("scheduler.critical_section_busy")
+        #                 session.rollback()
+        #                 return 0
+        #             raise
 
-            guard.commit()
+        #     guard.commit()
 
-        return num_queued_tis
+        # return num_queued_tis
 
     @retry_db_transaction
     def _get_next_dagruns_to_examine(self, state: DagRunState, session: Session) -> Query:
@@ -1496,17 +1498,41 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
         guard: CommitProhibitorGuard,
         dag_runs: Iterable[DagRun],
         session: Session,
-    ) -> list[tuple[DagRun, DagCallbackRequest | None]]:
+    ) -> None:
         """Make scheduling decisions for all `dag_runs`."""
-        callback_tuples = [(run, self._schedule_dag_run(run, session=session)) for run in dag_runs]
+        callback_tuples_schedulable_tis = [(run, self._schedule_dag_run(run, session=session)) for run in dag_runs]
         guard.commit()
-        return callback_tuples
+
+        for dag_run, (callback_to_run, schedulable_tis) in callback_tuples_schedulable_tis:
+            if callback_to_run:
+                self._send_dag_callbacks_to_processor(dag_run.dag, callback_to_run)
+            if schedulable_tis:
+                task_tuples = []
+                for ti in schedulable_tis:
+                    if ti.dag_run.state in State.finished_dr_states:
+                        ti.set_state(None, session=session)
+                        continue
+                    command = ti.command_as_list(
+                        local=True,
+                        pickle_id=ti.dag_model.pickle_id,
+                    )
+
+                    priority = ti.priority_weight
+                    queue = None
+                    key = ti.key
+                    executor_config = ti.executor_config
+
+                    self.log.info("Sending %s to executor with command %s, queue %s, executor_config %s and priority %s", key, command, queue, executor_config, priority)
+
+                    task_tuples.append((key, command, queue, executor_config))
+
+                self.job.executor._my_process_tasks(task_tuples)
 
     def _schedule_dag_run(
         self,
         dag_run: DagRun,
         session: Session,
-    ) -> DagCallbackRequest | None:
+    ) -> Tuple[DagCallbackRequest | None, List[TI] | None] | None:
         """
         Make scheduling decisions about an individual dag run.
 
@@ -1589,7 +1615,7 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
         # see #11147/commit ee90807ac for more details
         dag_run.schedule_tis(schedulable_tis, session, max_tis_per_query=self.job.max_tis_per_query)
 
-        return callback_to_run
+        return (callback_to_run, schedulable_tis)
 
     def _verify_integrity_if_dag_changed(self, dag_run: DagRun, session: Session) -> bool:
         """

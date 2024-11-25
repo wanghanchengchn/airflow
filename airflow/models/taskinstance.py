@@ -32,7 +32,7 @@ import warnings
 from collections import defaultdict
 from datetime import timedelta
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Collection, Generator, Iterable, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Collection, Generator, Iterable, List, Tuple
 from urllib.parse import quote
 
 import dill
@@ -3309,7 +3309,7 @@ class TaskInstance(Base, LoggingMixin):
         ti: TaskInstance | TaskInstancePydantic,
         session: Session = NEW_SESSION,
         max_tis_per_query: int | None = None,
-    ):
+    ) -> List[TaskInstance] | None:
         from sqlalchemy.exc import OperationalError
 
         from airflow.models.dagrun import DagRun
@@ -3365,6 +3365,7 @@ class TaskInstance(Base, LoggingMixin):
             cls.logger().info("%d downstream tasks scheduled from follow-on schedule check", num)
 
             session.flush()
+            return schedulable_tis
 
         except OperationalError as e:
             # Any kind of DB error here is _non fatal_ as this block is just an optimisation.
@@ -3374,9 +3375,11 @@ class TaskInstance(Base, LoggingMixin):
                 exc_info=True,
             )
             session.rollback()
+            
+            return None
 
     @provide_session
-    def schedule_downstream_tasks(self, session: Session = NEW_SESSION, max_tis_per_query: int | None = None):
+    def schedule_downstream_tasks(self, session: Session = NEW_SESSION, max_tis_per_query: int | None = None) -> List[TaskInstance] | None: 
         """
         Schedule downstream tasks of this task instance.
 
