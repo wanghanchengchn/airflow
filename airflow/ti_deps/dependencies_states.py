@@ -37,6 +37,8 @@ RUNNABLE_STATES = {
     TaskInstanceState.UP_FOR_RESCHEDULE,
     # For normal scheduler/backfill cases
     TaskInstanceState.QUEUED,
+    # For cases where the task is sent to executor directly, without enqueueing 
+    TaskInstanceState.SCHEDULED,
 }
 
 QUEUEABLE_STATES = {

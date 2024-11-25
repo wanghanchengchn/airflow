@@ -6,6 +6,9 @@ def parse_timestamp(timestamp_str):
     return parser.parse(timestamp_str)
 
 def process_group(lines):
+    for line in lines:
+        print(line)
+    
     output = []
     
     # Process the first line
@@ -19,6 +22,10 @@ def process_group(lines):
         time_diff = (first_timestamp - begin_timestamp).total_seconds()
         output.append(f"{time_diff:.3f}")
     
+    note = ["==> 从用户触发到第一个task编为SCHEDULED状态", "==> [B1] 第一个task从SCHEDULED到RUNNING", "==> [B2] 第一个task从RUNNING到SUCCESS", "==> 第一个task将第二个task设置为SCHEDULED", "==> [B1] 第二个task从SCHEDULED到RUNNING", "==> [B2] 第二个task从RUNNING到SUCCESS", "==> [B3] 最后一个task从SUCCESS到整个dag SUCCESS"]
+    
+    note_index = 0
+    
     # Process the rest of the lines
     for i in range(1, len(lines)):
         prev_match = re.search(r'\[([\d\-T:\.+ ]+)\]', lines[i-1])
@@ -28,6 +35,8 @@ def process_group(lines):
             prev_timestamp = parse_timestamp(prev_match.group(1))
             curr_timestamp = parse_timestamp(curr_match.group(1))
             time_diff = (curr_timestamp - prev_timestamp).total_seconds()
+            print(f"{prev_timestamp} {curr_timestamp} {time_diff:.3f} {note[note_index]}")
+            note_index += 1
             output.append(f"{time_diff:.3f}")
     
     return output
