@@ -6,6 +6,9 @@ def parse_timestamp(timestamp_str):
     return parser.parse(timestamp_str)
 
 def process_group(lines):
+    for line in lines:
+        print(line)
+
     output = []
     
     # Process the first line

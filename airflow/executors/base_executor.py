@@ -258,6 +258,8 @@ class BaseExecutor(LoggingMixin):
         """
         sorted_queue = self.order_queued_tasks_by_priority()
         task_tuples = []
+        
+        self.log.info("WHC: sorted_queue: %s len sorted_queue: %s", sorted_queue, len(sorted_queue))
 
         for _ in range(min((open_slots, len(self.queued_tasks)))):
             key, (command, _, queue, ti) = sorted_queue.pop(0)
