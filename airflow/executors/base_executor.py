@@ -300,6 +300,11 @@ class BaseExecutor(LoggingMixin):
             self.execute_async(key=key, command=command, queue=queue, executor_config=executor_config)
             self.running.add(key)
 
+    def _process_tasks_without_queue(self, task_tuples: list[TaskTuple]) -> None:
+        for key, command, queue, executor_config in task_tuples:
+            self.execute_async(key=key, command=command, queue=queue, executor_config=executor_config)
+            self.running.add(key)
+
     def change_state(self, key: TaskInstanceKey, state: TaskInstanceState, info=None) -> None:
         """
         Change state of the task.

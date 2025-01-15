@@ -682,6 +682,45 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
         self._enqueue_task_instances_with_queued_state(queued_tis, session=session)
         return len(queued_tis)
 
+    def _execute_task_instances_directly(self, task_instances: list[TI], session: Session) -> None:
+        """
+        Enqueue task_instances which should have been set to queued with the executor.
+
+        :param task_instances: TaskInstances to enqueue
+        :param session: The session object
+        """
+        task_tuples = []
+        # actually enqueue them
+        for ti in task_instances:
+            if ti.dag_run.state in State.finished_dr_states:
+                ti.set_state(None, session=session)
+                continue
+            command = ti.command_as_list(
+                local=True,
+                pickle_id=ti.dag_model.pickle_id,
+            )
+
+            priority = ti.priority_weight
+            queue = None
+            key = ti.key
+            executor_config = ti.executor_config
+            
+            self.log.info("Sending %s to executor with command %s, queue %s, executor_config %s and priority %s", key, command, queue, executor_config, priority)
+
+            task_tuples.append((key, command, queue, executor_config))
+            
+        self.job.executor._process_tasks_without_queue(task_tuples)
+
+    def _critical_section_execute_task_instances(self, session: Session) -> int:
+        if self.job.max_tis_per_query == 0:
+            max_tis = self.job.executor.slots_available
+        else:
+            max_tis = min(self.job.max_tis_per_query, self.job.executor.slots_available)
+        queued_tis = self._executable_task_instances_to_queued(max_tis, session=session)
+
+        self._execute_task_instances_directly(queued_tis, session=session)
+        return len(queued_tis)
+
     def _process_executor_events(self, session: Session) -> int:
         """Respond to executor events."""
         if not self._standalone_dag_processor and not self.processor_agent:
@@ -1100,8 +1139,8 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
                     timer = Stats.timer("scheduler.critical_section_duration")
                     timer.start()
 
-                    # Find anything TIs in state SCHEDULED, try to QUEUE it (send it to the executor)
-                    num_queued_tis = self._critical_section_enqueue_task_instances(session=session)
+                    # Find anything TIs in state SCHEDULED, try to send it to the executor directly (without ENQUEUE)
+                    num_queued_tis = self._critical_section_execute_task_instances(session=session)
 
                     # Make sure we only sent this metric if we obtained the lock, otherwise we'll skew the
                     # metric, way down
