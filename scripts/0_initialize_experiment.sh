@@ -21,8 +21,8 @@ echo "Deploying dag_w1_d1"
 echo "Deploying dag_w1_d2"
 ./scripts/deploy_workflow.sh dag_w1_d2
 
-# echo "Deploying dag_w1_d4"
-# ./scripts/deploy_workflow.sh dag_w1_d4
+echo "Deploying dag_w1_d4"
+./scripts/deploy_workflow.sh dag_w1_d4
 
 # echo "Deploying dag_w1_d8"
 # ./scripts/deploy_workflow.sh dag_w1_d8

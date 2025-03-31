@@ -348,6 +348,7 @@ class AirflowKubernetesScheduler(LoggingMixin):
         
         # load kn service urls asynchronously
         self._worker_service_urls_future = self.executor_pool.submit(self._retrieve_kn_service_urls)    
+        self.pod_task_pool = concurrent.futures.ThreadPoolExecutor(max_workers=10)
         
     def _retrieve_kn_service_urls(self):
         while True:
@@ -412,33 +413,70 @@ class AirflowKubernetesScheduler(LoggingMixin):
         # collect xcom values from upstream tasks
         timer = Timer("executor_async_task", annotations)
         timer.time("function_entry")
-        try:
-            self.log.info(f"Sending POST request to {endpoint} with arguments {args}")
-            timer.time("before_post_request")
-            try: 
-                r = invoke_task(target=endpoint, args=args)
+
+        def task_callback(future):
+            try:
+                r = future.result()
                 timer.time("after_post_request")
-                timing  = pickle.loads(r.timing)
+                timing = pickle.loads(r.timing)
                 
+                self.log.info(f'Task run {annotations} done with status code 200')
+                # state 'None' indicates success in this context
+                self.watcher_queue.put(("airflow-worker-0", "airflow", None, annotations, 0))
+                
+                timer.time("function_exit")
+                self.log.info(f"WHCIMP: TIMING: {json.dumps({'function': 'worker_execution', 'times': [timing['execution_time']], 'timestamp_annotations': annotations})}")
+                self.log.info(timer.get_log_line())
                 
             except grpc.RpcError as e:
                 self.log.info(f"Airflow Worker {endpoint} Failed with error {e}")
                 self.watcher_queue.put(("airflow-worker-0", "airflow", TaskInstanceState.FAILED, annotations, 0))
-                return
+            except Exception as e:
+                self.log.info(f"Airflow Worker {endpoint} Failed with error {e}")
+                self.log.error(e)
+                self.watcher_queue.put(("airflow-worker-0", "airflow", TaskInstanceState.FAILED, annotations, 0))
 
-            self.log.info(f'Task run {annotations} done with status code 200')
-            # state 'None' indicates success in this context
-            self.watcher_queue.put(("airflow-worker-0", "airflow", None, annotations, 0))
-            timer.time("function_exit")
-            self.log.info(f"WHCIMP: TIMING: {json.dumps({'function': 'worker_execution', 'times': [timing['execution_time']], 'timestamp_annotations': annotations})}")
-            self.log.info(timer.get_log_line())
+        try:
+            self.log.info(f"Sending POST request to {endpoint} with arguments {args}")
+            timer.time("before_post_request")
+            
+            # 提交任务到线程池
+            future = self.pod_task_pool.submit(invoke_task, target=endpoint, args=args)
+            future.add_done_callback(task_callback)
+            
             return
-        
+            
         except Exception as e:
-            self.log.info(f"Airflow Worker {endpoint} Failed with error {e}")
-            self.log.error(e)
+            self.log.error(f"Failed to submit task: {e}")
             self.watcher_queue.put(("airflow-worker-0", "airflow", TaskInstanceState.FAILED, annotations, 0))
-            return
+
+        # try:
+        #     self.log.info(f"Sending POST request to {endpoint} with arguments {args}")
+        #     timer.time("before_post_request")
+        #     try: 
+        #         r = invoke_task(target=endpoint, args=args)
+        #         timer.time("after_post_request")
+        #         timing  = pickle.loads(r.timing)
+                
+                
+        #     except grpc.RpcError as e:
+        #         self.log.info(f"Airflow Worker {endpoint} Failed with error {e}")
+        #         self.watcher_queue.put(("airflow-worker-0", "airflow", TaskInstanceState.FAILED, annotations, 0))
+        #         return
+
+        #     self.log.info(f'Task run {annotations} done with status code 200')
+        #     # state 'None' indicates success in this context
+        #     self.watcher_queue.put(("airflow-worker-0", "airflow", None, annotations, 0))
+        #     timer.time("function_exit")
+        #     self.log.info(f"WHCIMP: TIMING: {json.dumps({'function': 'worker_execution', 'times': [timing['execution_time']], 'timestamp_annotations': annotations})}")
+        #     self.log.info(timer.get_log_line())
+        #     return
+        
+        # except Exception as e:
+        #     self.log.info(f"Airflow Worker {endpoint} Failed with error {e}")
+        #     self.log.error(e)
+        #     self.watcher_queue.put(("airflow-worker-0", "airflow", TaskInstanceState.FAILED, annotations, 0))
+        #     return
     
     def _make_kube_watcher(self, namespace) -> KubernetesJobWatcher:
         resource_version = ResourceVersion().resource_version.get(namespace, "0")

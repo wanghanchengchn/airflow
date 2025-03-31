@@ -66,6 +66,8 @@ from sqlalchemy.orm import reconstructor, relationship
 from sqlalchemy.orm.attributes import NO_VALUE, set_committed_value
 from sqlalchemy.sql.expression import case
 
+from airflow.grpc.remote_xcom.invoker import invoke_task
+
 from airflow import settings
 from airflow.api_internal.internal_api_call import internal_api_call
 from airflow.compat.functools import cache
@@ -386,6 +388,16 @@ def _creator_note(val):
     else:
         return TaskInstanceNote(*val)
 
+import time
+from contextlib import contextmanager
+
+@contextmanager
+def task_timer(task_instance, description="Task"):
+    start_time = time.perf_counter()
+    yield
+    end_time = time.perf_counter()
+    duration = end_time - start_time
+    task_instance.log.info("%s took %.3f seconds", description, duration)
 
 def _execute_task(task_instance: TaskInstance | TaskInstancePydantic, context: Context, task_orig: Operator):
     """
@@ -401,6 +413,55 @@ def _execute_task(task_instance: TaskInstance | TaskInstancePydantic, context: C
 
     if isinstance(task_to_execute, MappedOperator):
         raise AirflowException("MappedOperator cannot be executed.")
+
+    from airflow.models.dagrun import DagRun
+
+    # 这里可以直接执行下一个任务
+    with create_session() as session:
+        dag_run = session.query(DagRun).filter_by(
+            dag_id=task_instance.dag_id,
+            run_id=task_instance.run_id,
+        ).one()
+
+        task = task_instance.task
+        partial_dag = task.dag.partial_subset(
+            task.downstream_task_ids,
+            include_downstream=True,
+            include_upstream=False,
+            include_direct_upstream=True,
+        )
+        dag_run.dag = partial_dag
+
+        downstream_tis = []
+        for downstream_task_id in task.downstream_task_ids:
+            downstream_task = partial_dag.get_task(downstream_task_id)
+            log.info("WHC: CMD: Downstream task: %s", downstream_task)
+            
+            # 修改这里的 TaskInstance 初始化
+            downstream_ti = TaskInstance(
+                task=downstream_task,
+                execution_date=dag_run.execution_date,  # 使用 execution_date 而不是 dag_run
+                run_id=dag_run.run_id,  # 添加 run_id
+                map_index=task_instance.map_index
+            )
+            downstream_tis.append(downstream_ti)
+            
+        # 直接调度下游任务
+        log.info("WHC: CMD: Downstream tasks scheduled: %s", downstream_tis)
+        dag_run.schedule_tis(downstream_tis, session=session)
+        session.flush()
+        session.commit()
+
+        # 重新查询来验证状态
+        for ti in downstream_tis:
+            refreshed_ti = session.query(TaskInstance).filter(
+                TaskInstance.dag_id == ti.dag_id,
+                TaskInstance.task_id == ti.task_id,
+                TaskInstance.run_id == ti.run_id
+            ).one()
+            log.info("WHC: CMD: After scheduling - Task %s state: %s", ti.task_id, refreshed_ti.state)
+    
+    log.info("WHC: CMD: Task scheduled downstream tasks!!! Do you receive Job??")
 
     # If the task has been deferred and is being executed due to a trigger,
     # then we need to pick the right method to come back to, otherwise
@@ -436,17 +497,22 @@ def _execute_task(task_instance: TaskInstance | TaskInstancePydantic, context: C
             task_to_execute.on_kill()
             raise
     else:
-        result = execute_callable(context=context, **execute_callable_kwargs)
-    with create_session() as session:
-        if task_to_execute.do_xcom_push:
-            xcom_value = result
-        else:
-            xcom_value = None
-        if xcom_value is not None:  # If the task returns a result, push an XCom containing it.
-            task_instance.xcom_push(key=XCOM_RETURN_KEY, value=xcom_value, session=session)
-        _record_task_map_for_downstreams(
-            task_instance=task_instance, task=task_orig, value=xcom_value, session=session
-        )
+        log.info("Executing execute method from %s Function: %s", task_to_execute.__class__.__name__, execute_callable)
+        with task_timer(task_instance, f"Execute {task_to_execute.__class__.__name__}"):
+            result = execute_callable(context=context, **execute_callable_kwargs)
+        log.info("Executing execute method from %s Function: %s", task_to_execute.__class__.__name__, execute_callable)
+    
+    with task_timer(task_instance, "XCom push and task mapping"):
+        with create_session() as session:
+            if task_to_execute.do_xcom_push:
+                xcom_value = result
+            else:
+                xcom_value = None
+            if xcom_value is not None:  # If the task returns a result, push an XCom containing it.
+                task_instance.xcom_push(key=XCOM_RETURN_KEY, value=xcom_value, session=session)
+            _record_task_map_for_downstreams(
+                task_instance=task_instance, task=task_orig, value=xcom_value, session=session
+            )
     return result
 
 
@@ -2096,6 +2162,9 @@ class TaskInstance(Base, LoggingMixin):
         :param session: SQLAlchemy ORM Session
         :return: whether the state was changed to running or not
         """
+        
+        ignore_task_deps = True
+
         if isinstance(task_instance, TaskInstance):
             ti: TaskInstance = task_instance
         else:  # isinstance(task_instance,TaskInstancePydantic)
@@ -3361,8 +3430,28 @@ class TaskInstance(Base, LoggingMixin):
                     schedulable_ti.task = task.dag.get_task(schedulable_ti.task_id)
 
             cls.logger().info("WHC: %s downstream tasks scheduled", schedulable_tis)
-            num = dag_run.schedule_tis(schedulable_tis, session=session, max_tis_per_query=max_tis_per_query)
-            cls.logger().info("%d downstream tasks scheduled from follow-on schedule check", num)
+            # num = dag_run.schedule_tis(schedulable_tis, session=session, max_tis_per_query=max_tis_per_query)
+            
+            # def _get_worker_url(dag_id: str, task_id: str) -> str:
+            #     """Generate worker service URL based on dag_id and task_id."""
+            #     formatted_dag_id = dag_id.replace('_', '-')
+            #     formatted_task_id = task_id.replace('_', '-')
+            #     return f"http://airflow-worker-{formatted_dag_id}-{formatted_task_id}.airflow.192.168.1.240.sslip.io"
+    
+            # # 这里可以直接触发下一个任务
+            # for ti in schedulable_tis:
+            #     command = ti.command_as_list(
+            #         local=True,
+            #         pickle_id=ti.dag_model.pickle_id,
+            #     )
+            #     worker_url = _get_worker_url(ti.dag_id, ti.task_id)
+            #     cls.logger().info("WHC: CMD: Task command: %s", command)
+            #     cls.logger().info("WHC: CMD: Worker URL: %s", worker_url)
+
+            #     r = invoke_task(target=worker_url, args=command)
+            #     cls.logger().info("WHC: CMD: Task run %s done with status code 200", r)
+
+            # cls.logger().info("%d downstream tasks scheduled from follow-on schedule check", num)
 
             session.flush()
 

@@ -1142,6 +1142,10 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
                     # Find anything TIs in state SCHEDULED, try to send it to the executor directly (without ENQUEUE)
                     num_queued_tis = self._critical_section_execute_task_instances(session=session)
 
+                    # # Find anything TIs in state SCHEDULED, try to QUEUE it (send it to the executor)
+                    # num_queued_tis = self._critical_section_enqueue_task_instances(session=session)
+
+
                     # Make sure we only sent this metric if we obtained the lock, otherwise we'll skew the
                     # metric, way down
                     timer.stop(send=True)
