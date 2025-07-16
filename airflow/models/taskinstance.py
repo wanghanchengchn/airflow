@@ -412,54 +412,54 @@ def _execute_task(task_instance: TaskInstance | TaskInstancePydantic, context: C
     if isinstance(task_to_execute, MappedOperator):
         raise AirflowException("MappedOperator cannot be executed.")
 
-    # from airflow.models.dagrun import DagRun
+    from airflow.models.dagrun import DagRun
 
-    # # 这里可以直接执行下一个任务
-    # with create_session() as session:
-    #     dag_run = session.query(DagRun).filter_by(
-    #         dag_id=task_instance.dag_id,
-    #         run_id=task_instance.run_id,
-    #     ).one()
+    # 这里可以直接执行下一个任务
+    with create_session() as session:
+        dag_run = session.query(DagRun).filter_by(
+            dag_id=task_instance.dag_id,
+            run_id=task_instance.run_id,
+        ).one()
 
-    #     task = task_instance.task
-    #     partial_dag = task.dag.partial_subset(
-    #         task.downstream_task_ids,
-    #         include_downstream=True,
-    #         include_upstream=False,
-    #         include_direct_upstream=True,
-    #     )
-    #     dag_run.dag = partial_dag
+        task = task_instance.task
+        partial_dag = task.dag.partial_subset(
+            task.downstream_task_ids,
+            include_downstream=True,
+            include_upstream=False,
+            include_direct_upstream=True,
+        )
+        dag_run.dag = partial_dag
 
-    #     downstream_tis = []
-    #     for downstream_task_id in task.downstream_task_ids:
-    #         downstream_task = partial_dag.get_task(downstream_task_id)
-    #         log.info("WHC: Downstream task: %s", downstream_task)
+        downstream_tis = []
+        for downstream_task_id in task.downstream_task_ids:
+            downstream_task = partial_dag.get_task(downstream_task_id)
+            log.info("WHC: Downstream task: %s", downstream_task)
             
-    #         # 修改这里的 TaskInstance 初始化
-    #         downstream_ti = TaskInstance(
-    #             task=downstream_task,
-    #             execution_date=dag_run.execution_date,  # 使用 execution_date 而不是 dag_run
-    #             run_id=dag_run.run_id,  # 添加 run_id
-    #             map_index=task_instance.map_index
-    #         )
-    #         downstream_tis.append(downstream_ti)
+            # 修改这里的 TaskInstance 初始化
+            downstream_ti = TaskInstance(
+                task=downstream_task,
+                execution_date=dag_run.execution_date,  # 使用 execution_date 而不是 dag_run
+                run_id=dag_run.run_id,  # 添加 run_id
+                map_index=task_instance.map_index
+            )
+            downstream_tis.append(downstream_ti)
             
-    #     # 直接调度下游任务
-    #     dag_run.schedule_tis(downstream_tis, session=session)
-    #     log.info("WHC: Downstream tasks scheduled: %s", downstream_tis)
-    #     session.flush()
-    #     session.commit()
+        # 直接调度下游任务
+        dag_run.schedule_tis(downstream_tis, session=session)
+        log.info("WHC: Downstream tasks scheduled: %s", downstream_tis)
+        session.flush()
+        session.commit()
 
-    #     # 重新查询来验证状态
-    #     for ti in downstream_tis:
-    #         refreshed_ti = session.query(TaskInstance).filter(
-    #             TaskInstance.dag_id == ti.dag_id,
-    #             TaskInstance.task_id == ti.task_id,
-    #             TaskInstance.run_id == ti.run_id
-    #         ).one()
-    #         log.info("WHC: After scheduling - Task %s state: %s", ti.task_id, refreshed_ti.state)
+        # 重新查询来验证状态
+        for ti in downstream_tis:
+            refreshed_ti = session.query(TaskInstance).filter(
+                TaskInstance.dag_id == ti.dag_id,
+                TaskInstance.task_id == ti.task_id,
+                TaskInstance.run_id == ti.run_id
+            ).one()
+            log.info("WHC: After scheduling - Task %s state: %s", ti.task_id, refreshed_ti.state)
     
-    # log.info("WHC: Task scheduled downstream tasks!!! Do you receive Job??")
+    log.info("WHC: Task scheduled downstream tasks!!! Do you receive Job??")
 
     # If the task has been deferred and is being executed due to a trigger,
     # then we need to pick the right method to come back to, otherwise
@@ -2163,7 +2163,7 @@ class TaskInstance(Base, LoggingMixin):
         :param session: SQLAlchemy ORM Session
         :return: whether the state was changed to running or not
         """
-        # ignore_task_deps = True
+        ignore_task_deps = True
 
         if isinstance(task_instance, TaskInstance):
             ti: TaskInstance = task_instance
