@@ -10,7 +10,7 @@ sudo truncate -s 0 /var/log/pods/airflow_airflow-scheduler-*_*/scheduler/0.log
 
 for func in $(seq 1 $DAG_D)
 do
-    sudo truncate -s 0 /var/log/pods/airflow_airflow-worker-dag-w1-d${DAG_D}-func-1-${func}-00001-*_*/user-container/0.log
+    sudo truncate -s 0 /var/log/pods/airflow_airflow-worker-${DAG_NAME//_/-}-func-1-${func}-00001-*_*/user-container/0.log
 done
 
 ################################################################################################################
@@ -39,7 +39,7 @@ worker_logs=""
 
 for i in $(seq 1 $DAG_D)
 do
-    worker="$(kubectl -n airflow get pods | grep worker-dag-w1-d${DAG_D}- | awk '{print $1}' | sed -n "${i}p")"
+    worker="$(kubectl -n airflow get pods | grep worker-${DAG_NAME//_/-}- | awk '{print $1}' | sort -V | sed -n "${i}p")"
     kubectl -n airflow logs "$worker" user-container | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,3})*)?[mGK]//g" > "$log_dir"/log_worker${i}.log
     worker_logs+=" $log_dir/log_worker${i}.log"
 done

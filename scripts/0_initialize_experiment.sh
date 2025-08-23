@@ -15,20 +15,29 @@ echo "Setting up Airflow"
 ./scripts/build_knative_yamls.sh
 ./scripts/setup_airflow.sh
 
-echo "Deploying dag_w1_d1"
-./scripts/deploy_workflow.sh dag_w1_d1
+echo "Deploying dag_w1_d17"
+./scripts/deploy_workflow.sh dag_w1_d17
 
-echo "Deploying dag_w1_d2"
-./scripts/deploy_workflow.sh dag_w1_d2
+# echo "Deploying dag_w1_d5"
+# ./scripts/deploy_workflow.sh dag_w1_d5
 
-echo "Deploying dag_w1_d4"
-./scripts/deploy_workflow.sh dag_w1_d4
+# echo "Deploying dag_w1_d7"
+# ./scripts/deploy_workflow.sh dag_w1_d7
 
-echo "Deploying dag_w1_d8"
-./scripts/deploy_workflow.sh dag_w1_d8
+# echo "Deploying dag_w1_d10"
+# ./scripts/deploy_workflow.sh dag_w1_d10
 
-echo "Deploying dag_w1_d16"
-./scripts/deploy_workflow.sh dag_w1_d16
+# echo "Deploying dag_w1_d2"
+# ./scripts/deploy_workflow.sh dag_w1_d2
 
-echo "Deploying dag_w1_d32"
-./scripts/deploy_workflow.sh dag_w1_d32
+# echo "Deploying dag_w1_d4"
+# ./scripts/deploy_workflow.sh dag_w1_d4
+
+# echo "Deploying dag_w1_d8"
+# ./scripts/deploy_workflow.sh dag_w1_d8
+
+# echo "Deploying dag_w1_d16"
+# ./scripts/deploy_workflow.sh dag_w1_d16
+
+# echo "Deploying dag_w1_d32"
+# ./scripts/deploy_workflow.sh dag_w1_d32
