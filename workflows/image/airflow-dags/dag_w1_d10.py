@@ -311,7 +311,7 @@ def dag_w1_d10():
     def func_1_3(
         upstream_output_func_1_1,
         dag_id: str = "dag_w1_d10",
-        upstream_task_id: str = "func_1_2",
+        upstream_task_id: str = "func_1_1",
         task_name: str = "func_1_3",
         enable_optimization: bool = True,
     ):
@@ -343,7 +343,7 @@ def dag_w1_d10():
     def func_1_4(
         upstream_output_func_1_1,
         dag_id: str = "dag_w1_d10",
-        upstream_task_id: str = "func_1_3",
+        upstream_task_id: str = "func_1_1",
         task_name: str = "func_1_4",
         enable_optimization: bool = True,
     ):
@@ -444,7 +444,7 @@ def dag_w1_d10():
     def func_1_7(
         upstream_output_func_1_5,
         dag_id: str = "dag_w1_d10",
-        upstream_task_id: str = "func_1_6",
+        upstream_task_id: str = "func_1_5",
         task_name: str = "func_1_7",
         enable_optimization: bool = True,
     ):
@@ -477,7 +477,7 @@ def dag_w1_d10():
     def func_1_8(
         upstream_output_func_1_5,
         dag_id: str = "dag_w1_d10",
-        upstream_task_id: str = "func_1_7",
+        upstream_task_id: str = "func_1_5",
         task_name: str = "func_1_8",
         enable_optimization: bool = True,
     ):
@@ -510,7 +510,7 @@ def dag_w1_d10():
     def func_1_9(
         upstream_output_func_1_5,
         dag_id: str = "dag_w1_d10",
-        upstream_task_id: str = "func_1_8",
+        upstream_task_id: str = "func_1_5",
         task_name: str = "func_1_9",
         enable_optimization: bool = True,
     ):
@@ -543,7 +543,7 @@ def dag_w1_d10():
     def func_1_10(
         upstream_output_func_1_5,
         dag_id: str = "dag_w1_d10",
-        upstream_task_id: str = "func_1_9",
+        upstream_task_id: str = "func_1_5",
         task_name: str = "func_1_10",
         enable_optimization: bool = True,
     ):

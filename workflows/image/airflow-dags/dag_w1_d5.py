@@ -364,7 +364,7 @@ def dag_w1_d5():
     def func_1_3(
         upstream_output_func_1_1,
         dag_id: str = "dag_w1_d5",
-        upstream_task_id: str = "func_1_2",
+        upstream_task_id: str = "func_1_1",
         task_name: str = "func_1_3",
         enable_optimization: bool = True,
     ):
@@ -430,7 +430,7 @@ def dag_w1_d5():
     func_1_3_output = func_1_3(
         upstream_output_func_1_1=func_1_1_output,
         dag_id="dag_w1_d5",
-        upstream_task_id="func_1_2",
+        upstream_task_id="func_1_1",
         task_name="func_1_3",
         enable_optimization=_enable_optimization,
     )
