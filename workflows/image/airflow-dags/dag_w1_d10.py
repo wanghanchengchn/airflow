@@ -234,7 +234,7 @@ def dag_w1_d10():
     @task
     @timing
     def func_1_1(event):
-        logging.info("======= begin: func_1_1 execution =======")
+        logging.info("======= func_1_1 execution start =======")
 
         benchmark_bucket = event["benchmark_bucket"]
         words_bucket = event["words_bucket"]
@@ -270,6 +270,8 @@ def dag_w1_d10():
             "prefix": prefix
         } for b in blobs]
 
+        logging.info("======= func_1_1 execution end =======")
+
         return {
             "list": lst
         }
@@ -283,7 +285,7 @@ def dag_w1_d10():
         task_name: str = "func_1_2",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_2 execution =======")
+        logging.info("======= func_1_2 execution start =======")
 
         event = upstream_output_func_1_1["list"][0]
         benchmark_bucket = event["benchmark_bucket"]
@@ -304,6 +306,8 @@ def dag_w1_d10():
             #client.upload_stream(benchmark_bucket, os.path.join(bucket, prefix, word, blob), data)
             client.upload_stream(benchmark_bucket, os.path.join(prefix, word, blob), data)
 
+        logging.info("======= func_1_2 execution end =======")
+
         return upstream_output_func_1_1
 
     @task
@@ -315,7 +319,7 @@ def dag_w1_d10():
         task_name: str = "func_1_3",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_3 execution =======")
+        logging.info("======= func_1_3 execution start =======")
 
         event = upstream_output_func_1_1["list"][1]
         benchmark_bucket = event["benchmark_bucket"]
@@ -336,6 +340,8 @@ def dag_w1_d10():
             #client.upload_stream(benchmark_bucket, os.path.join(bucket, prefix, word, blob), data)
             client.upload_stream(benchmark_bucket, os.path.join(prefix, word, blob), data)
 
+        logging.info("======= func_1_3 execution end =======")
+
         return upstream_output_func_1_1
 
     @task
@@ -347,7 +353,7 @@ def dag_w1_d10():
         task_name: str = "func_1_4",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_4 execution =======")
+        logging.info("======= func_1_4 execution start =======")
 
         event = upstream_output_func_1_1["list"][2]
         benchmark_bucket = event["benchmark_bucket"]
@@ -368,6 +374,8 @@ def dag_w1_d10():
             #client.upload_stream(benchmark_bucket, os.path.join(bucket, prefix, word, blob), data)
             client.upload_stream(benchmark_bucket, os.path.join(prefix, word, blob), data)
 
+        logging.info("======= func_1_4 execution end =======")
+
         return upstream_output_func_1_1
 
     @task
@@ -381,7 +389,7 @@ def dag_w1_d10():
         task_name: str = "func_1_5",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_5 execution =======")
+        logging.info("======= func_1_5 execution start =======")
 
         event = upstream_output_func_1_2
 
@@ -402,6 +410,8 @@ def dag_w1_d10():
             #"dir": os.path.join(bucket, prefix)
         } for path in dirs]
 
+        logging.info("======= func_1_5 execution end =======")
+
         return {
             "list": lst
         }
@@ -415,7 +425,7 @@ def dag_w1_d10():
         task_name: str = "func_1_6",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_6 execution =======")
+        logging.info("======= func_1_6 execution start =======")
 
         event = upstream_output_func_1_5["list"][0]
 
@@ -434,6 +444,8 @@ def dag_w1_d10():
         logging.info(f"WHC: word: {os.path.basename(path)}")
         logging.info(f"WHC: count: {count}")
 
+        logging.info("======= func_1_6 execution end =======")
+
         return {
             "word": os.path.basename(path),
             "count": count
@@ -448,7 +460,7 @@ def dag_w1_d10():
         task_name: str = "func_1_7",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_7 execution =======")
+        logging.info("======= func_1_7 execution start =======")
 
         event = upstream_output_func_1_5["list"][1]
 
@@ -467,6 +479,8 @@ def dag_w1_d10():
         logging.info(f"WHC: word: {os.path.basename(path)}")
         logging.info(f"WHC: count: {count}")
 
+        logging.info("======= func_1_7 execution end =======")
+
         return {
             "word": os.path.basename(path),
             "count": count
@@ -481,7 +495,7 @@ def dag_w1_d10():
         task_name: str = "func_1_8",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_8 execution =======")
+        logging.info("======= func_1_8 execution start =======")
 
         event = upstream_output_func_1_5["list"][2]
 
@@ -500,6 +514,8 @@ def dag_w1_d10():
         logging.info(f"WHC: word: {os.path.basename(path)}")
         logging.info(f"WHC: count: {count}")
 
+        logging.info("======= func_1_8 execution end =======")
+
         return {
             "word": os.path.basename(path),
             "count": count
@@ -514,7 +530,7 @@ def dag_w1_d10():
         task_name: str = "func_1_9",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_9 execution =======")
+        logging.info("======= func_1_9 execution start =======")
 
         event = upstream_output_func_1_5["list"][3]
 
@@ -533,6 +549,8 @@ def dag_w1_d10():
         logging.info(f"WHC: word: {os.path.basename(path)}")
         logging.info(f"WHC: count: {count}")
 
+        logging.info("======= func_1_9 execution end =======")
+
         return {
             "word": os.path.basename(path),
             "count": count
@@ -547,7 +565,7 @@ def dag_w1_d10():
         task_name: str = "func_1_10",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_10 execution =======")
+        logging.info("======= func_1_10 execution start =======")
         
         event = upstream_output_func_1_5["list"][4]
 
@@ -565,6 +583,8 @@ def dag_w1_d10():
 
         logging.info(f"WHC: word: {os.path.basename(path)}")
         logging.info(f"WHC: count: {count}")
+
+        logging.info("======= func_1_10 execution end =======")
 
         return {
             "word": os.path.basename(path),
