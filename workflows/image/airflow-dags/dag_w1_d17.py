@@ -395,13 +395,15 @@ def dag_w1_d17():
     @task
     @timing
     def func_1_1(event):
-        logging.info("======= begin: func_1_1 execution =======")
+        logging.info("======= func_1_1 execution start =======")
 
         segs = chunks(event["segments"], event["batch_size"])
         input_bucket = event["input_bucket"]
         output_bucket = event["output_bucket"]
         benchmark_bucket = event["benchmark_bucket"]
         quality = event["quality"]
+
+        logging.info("======= func_1_1 execution end =======")
 
         return {
             "segments": [
@@ -426,7 +428,7 @@ def dag_w1_d17():
         task_name: str = "func_1_2",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_2 execution =======")
+        logging.info("======= func_1_2 execution start =======")
 
         event = upstream_output_func_1_1["segments"][0]
 
@@ -456,6 +458,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_2 execution end =======")
+
         return upstream_output_func_1_1
 
     @task
@@ -467,7 +471,7 @@ def dag_w1_d17():
         task_name: str = "func_1_3",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_3 execution =======")
+        logging.info("======= func_1_3 execution start =======")
 
         event = upstream_output_func_1_2["segments"][0]
 
@@ -500,6 +504,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_3 execution end =======")
+
         return upstream_output_func_1_2
 
     @task
@@ -511,7 +517,7 @@ def dag_w1_d17():
         task_name: str = "func_1_4",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_4 execution =======")
+        logging.info("======= func_1_4 execution start =======")
 
         event = upstream_output_func_1_3["segments"][0]
 
@@ -553,6 +559,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_4 execution end =======")
+
         return upstream_output_func_1_3
 
     @task
@@ -564,7 +572,7 @@ def dag_w1_d17():
         task_name: str = "func_1_5",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_5 execution =======")
+        logging.info("======= func_1_5 execution start =======")
 
         event = upstream_output_func_1_1["segments"][1]
 
@@ -593,6 +601,8 @@ def dag_w1_d17():
         upload_files(benchmark_bucket, output_bucket, output_paths, prefix)
 
         shutil.rmtree(data_dir)
+        
+        logging.info("======= func_1_5 execution end =======")
 
         return upstream_output_func_1_1
 
@@ -605,7 +615,7 @@ def dag_w1_d17():
         task_name: str = "func_1_6",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_6 execution =======")
+        logging.info("======= func_1_6 execution start =======")
 
         event = upstream_output_func_1_5["segments"][1]
 
@@ -638,6 +648,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_6 execution end =======")
+
         return upstream_output_func_1_5
 
     @task
@@ -649,7 +661,7 @@ def dag_w1_d17():
         task_name: str = "func_1_7",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_7 execution =======")
+        logging.info("======= func_1_7 execution start =======")
 
         event = upstream_output_func_1_6["segments"][1]
 
@@ -691,6 +703,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_7 execution end =======")
+
         return upstream_output_func_1_6
 
     @task
@@ -702,7 +716,7 @@ def dag_w1_d17():
         task_name: str = "func_1_8",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_8 execution =======")
+        logging.info("======= func_1_8 execution start =======")
 
         event = upstream_output_func_1_1["segments"][2]
 
@@ -732,6 +746,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_8 execution end =======")
+
         return upstream_output_func_1_1
 
     @task
@@ -743,7 +759,7 @@ def dag_w1_d17():
         task_name: str = "func_1_9",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_9 execution =======")
+        logging.info("======= func_1_9 execution start =======")
 
         event = upstream_output_func_1_8["segments"][2]
 
@@ -775,7 +791,9 @@ def dag_w1_d17():
         upload_files(benchmark_bucket, output_bucket, output_paths, prefix)
 
         shutil.rmtree(data_dir)
-
+        
+        logging.info("======= func_1_9 execution end =======")
+        
         return upstream_output_func_1_8
 
     @task
@@ -787,7 +805,7 @@ def dag_w1_d17():
         task_name: str = "func_1_10",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_10 execution =======")
+        logging.info("======= func_1_10 execution start =======")
 
         event = upstream_output_func_1_9["segments"][2]
 
@@ -829,6 +847,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_10 execution end =======")
+
         return upstream_output_func_1_9
 
     @task
@@ -840,7 +860,7 @@ def dag_w1_d17():
         task_name: str = "func_1_11",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_11 execution =======")
+        logging.info("======= func_1_11 execution start =======")
 
         event = upstream_output_func_1_1["segments"][3]
 
@@ -870,6 +890,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_11 execution end =======")
+
         return upstream_output_func_1_1
 
     @task
@@ -881,7 +903,7 @@ def dag_w1_d17():
         task_name: str = "func_1_12",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_12 execution =======")
+        logging.info("======= func_1_12 execution start =======")
         
         event = upstream_output_func_1_11["segments"][3]
 
@@ -914,6 +936,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_12 execution end =======")
+
         return upstream_output_func_1_11
 
     @task
@@ -925,7 +949,7 @@ def dag_w1_d17():
         task_name: str = "func_1_13",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_13 execution =======")
+        logging.info("======= func_1_13 execution start =======")
 
         event = upstream_output_func_1_12["segments"][3]
 
@@ -967,6 +991,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_13 execution end =======")
+
         return upstream_output_func_1_12
 
     @task
@@ -978,7 +1004,7 @@ def dag_w1_d17():
         task_name: str = "func_1_14",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_14 execution =======")
+        logging.info("======= func_1_14 execution start =======")
 
         event = upstream_output_func_1_1["segments"][4]
 
@@ -1008,6 +1034,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_14 execution end =======")
+
         return upstream_output_func_1_1
 
     @task
@@ -1019,7 +1047,7 @@ def dag_w1_d17():
         task_name: str = "func_1_15",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_15 execution =======")
+        logging.info("======= func_1_15 execution start =======")
 
         event = upstream_output_func_1_14["segments"][4]
 
@@ -1052,6 +1080,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_15 execution end =======")
+
         return upstream_output_func_1_14
 
     @task
@@ -1063,7 +1093,7 @@ def dag_w1_d17():
         task_name: str = "func_1_16",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_16 execution =======")
+        logging.info("======= func_1_16 execution start =======")
 
         event = upstream_output_func_1_15["segments"][4]
 
@@ -1105,6 +1135,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_16 execution end =======")
+
         return upstream_output_func_1_15
 
 
@@ -1130,21 +1162,21 @@ def dag_w1_d17():
     func_1_3_output = func_1_3(
         upstream_output_func_1_2=func_1_2_output,
         dag_id="dag_w1_d17",
-        upstream_task_id="func_1_1",
+        upstream_task_id="func_1_2",
         task_name="func_1_3",
         enable_optimization=_enable_optimization,
     )
     func_1_4_output = func_1_4(
         upstream_output_func_1_3=func_1_3_output,
         dag_id="dag_w1_d17",
-        upstream_task_id="func_1_1",
+        upstream_task_id="func_1_3",
         task_name="func_1_4",
         enable_optimization=_enable_optimization,
     )
     func_1_5_output = func_1_5(
         upstream_output_func_1_1=func_1_1_output,
         dag_id="dag_w1_d17",
-        upstream_task_id="func_1_4",
+        upstream_task_id="func_1_1",
         task_name="func_1_5",
         enable_optimization=_enable_optimization,
     )
@@ -1158,70 +1190,70 @@ def dag_w1_d17():
     func_1_7_output = func_1_7(
         upstream_output_func_1_6=func_1_6_output,
         dag_id="dag_w1_d17",
-        upstream_task_id="func_1_5",
+        upstream_task_id="func_1_6",
         task_name="func_1_7",
         enable_optimization=_enable_optimization,
     )
     func_1_8_output = func_1_8(
         upstream_output_func_1_1=func_1_1_output,
         dag_id="dag_w1_d17",
-        upstream_task_id="func_1_5",
+        upstream_task_id="func_1_1",
         task_name="func_1_8",
         enable_optimization=_enable_optimization,
     )
     func_1_9_output = func_1_9(
         upstream_output_func_1_8=func_1_8_output,
         dag_id="dag_w1_d17",
-        upstream_task_id="func_1_5",
+        upstream_task_id="func_1_8",
         task_name="func_1_9",
         enable_optimization=_enable_optimization,
     )
     func_1_10_output = func_1_10(
         upstream_output_func_1_9=func_1_9_output,
         dag_id="dag_w1_d17",
-        upstream_task_id="func_1_5",
+        upstream_task_id="func_1_9",
         task_name="func_1_10",
         enable_optimization=_enable_optimization,
     )
     func_1_11_output = func_1_11(
         upstream_output_func_1_1=func_1_1_output,
         dag_id="dag_w1_d17",
-        upstream_task_id="func_1_5",
+        upstream_task_id="func_1_1",
         task_name="func_1_11",
         enable_optimization=_enable_optimization,
     )
     func_1_12_output = func_1_12(
         upstream_output_func_1_11=func_1_11_output,
         dag_id="dag_w1_d17",
-        upstream_task_id="func_1_5",
+        upstream_task_id="func_1_11",
         task_name="func_1_12",
         enable_optimization=_enable_optimization,
     )
     func_1_13_output = func_1_13(
         upstream_output_func_1_12=func_1_12_output,
         dag_id="dag_w1_d17",
-        upstream_task_id="func_1_5",
+        upstream_task_id="func_1_12",
         task_name="func_1_13",
         enable_optimization=_enable_optimization,
     )
     func_1_14_output = func_1_14(
         upstream_output_func_1_1=func_1_1_output,
         dag_id="dag_w1_d17",
-        upstream_task_id="func_1_5",
+        upstream_task_id="func_1_1",
         task_name="func_1_14",
         enable_optimization=_enable_optimization,
     )
     func_1_15_output = func_1_15(
         upstream_output_func_1_14=func_1_14_output,
         dag_id="dag_w1_d17",
-        upstream_task_id="func_1_5",
+        upstream_task_id="func_1_14",
         task_name="func_1_15",
         enable_optimization=_enable_optimization,
     )
     func_1_16_output = func_1_16(
         upstream_output_func_1_15=func_1_15_output,
         dag_id="dag_w1_d17",
-        upstream_task_id="func_1_5",
+        upstream_task_id="func_1_15",
         task_name="func_1_16",
         enable_optimization=_enable_optimization,
     )
