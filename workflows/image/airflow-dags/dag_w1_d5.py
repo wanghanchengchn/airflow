@@ -302,7 +302,7 @@ def dag_w1_d5():
     @task
     @timing
     def func_1_1(event):
-        logging.info("======= begin: func_1_1 execution =======")
+        logging.info("======= func_1_1 execution start =======")
 
         vid_blob = event["video"]
         n_frames = event["n_frames"]
@@ -318,6 +318,8 @@ def dag_w1_d5():
         img_paths = decode_video(vid_path, n_frames, tmp_dir)
         paths = list(upload_imgs(benchmark_bucket, frames_bucket, img_paths))
         frames = list(chunks(paths, batch_size))
+
+        logging.info("======= func_1_1 execution end =======")
 
         return {
             "frames": [{
@@ -339,9 +341,25 @@ def dag_w1_d5():
         task_name: str = "func_1_2",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_2 execution =======")
+        current_run_id = get_current_task_run_id(dag_id, task_name)
 
-        event = upstream_output_func_1_1["frames"][0]
+        if enable_optimization:
+            # 数据平面优化模式：并行获取上游数据和建立数据库连接
+            tasks = [
+                (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
+                (storage.get_instance, ()),
+            ]
+
+            # 并行执行任务
+            upstream_output, client = execute_parallel_tasks(tasks)
+        else:
+            # 普通模式：串行执行
+            upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
+            client = storage.get_instance()
+
+        logging.info("======= func_1_2 execution start =======")
+
+        event = upstream_output["frames"][0]
 
         tmp_dir = "/tmp"
 
@@ -357,6 +375,8 @@ def dag_w1_d5():
 
         preds = {f"{frames_names[idx]}": dets for idx, dets in enumerate(preds)}
 
+        logging.info("======= func_1_2 execution end =======")
+
         return preds
 
     @task
@@ -368,9 +388,25 @@ def dag_w1_d5():
         task_name: str = "func_1_3",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_3 execution =======")
+        current_run_id = get_current_task_run_id(dag_id, task_name)
+
+        if enable_optimization:
+            # 数据平面优化模式：并行获取上游数据和建立数据库连接
+            tasks = [
+                (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
+                (storage.get_instance, ()),
+            ]
+
+            # 并行执行任务
+            upstream_output, client = execute_parallel_tasks(tasks)
+        else:
+            # 普通模式：串行执行
+            upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
+            client = storage.get_instance()
+
+        logging.info("======= func_1_3 execution start =======")
         
-        event = upstream_output_func_1_1["frames"][1]
+        event = upstream_output["frames"][1]
 
         tmp_dir = "/tmp"
 
@@ -388,6 +424,8 @@ def dag_w1_d5():
 
         logging.info(f"WHC: preds: {preds}")
 
+        logging.info("======= func_1_3 execution end =======")
+
         return preds
 
     @task
@@ -399,8 +437,24 @@ def dag_w1_d5():
         upstream_task_id: str = "func_1_3",
         task_name: str = "func_1_4",
         enable_optimization: bool = True,
-    ):
-        logging.info("======= func_1_4 execution =======")
+    ): 
+        current_run_id = get_current_task_run_id(dag_id, task_name)
+
+        if enable_optimization:
+            # 数据平面优化模式：并行获取上游数据和建立数据库连接
+            tasks = [
+                (get_upstream_task_value, (dag_id, task_name, current_run_id, "func_1_2")),
+                (get_upstream_task_value, (dag_id, task_name, current_run_id, "func_1_3")),
+            ]
+
+            # 并行执行任务
+            upstream_output_func_1_2, upstream_output_func_1_3 = execute_parallel_tasks(tasks)
+        else:
+            # 普通模式：串行执行
+            upstream_output_func_1_2 = get_upstream_task_value(dag_id, task_name, current_run_id, "func_1_2")
+            upstream_output_func_1_3 = get_upstream_task_value(dag_id, task_name, current_run_id, "func_1_3")
+
+        logging.info("======= func_1_4 execution start =======")
 
         logs = {}
 
@@ -411,6 +465,8 @@ def dag_w1_d5():
             logs[frame_name] = detections
 
         logging.info(f"WHC: logs: {logs}")
+
+        logging.info("======= func_1_4 execution end =======")
 
         return logs
         

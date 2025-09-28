@@ -19,7 +19,7 @@ import random
 import boto3
 
 
-#### 
+####
 # 这是mapreduce的函数，运行方法是：./scripts/8_get_e2e_breakdown.sh 1 "dag_w1_d10" 40 10
 
 
@@ -96,11 +96,7 @@ def execute_parallel_tasks(tasks):
         return results
 
 
-size_generators = {
-    "test" : (50, 3),
-    "small": (1000, 3),
-    "large": (100000, 3)
-}
+size_generators = {"test": (50, 3), "small": (1000, 3), "large": (100000, 3)}
 
 
 def buckets_count():
@@ -114,21 +110,21 @@ def generate_input(size, benchmarks_bucket, input_buckets, output_buckets):
     random.shuffle(lst)
 
     list_name = "words"
-    
+
     return {
         "benchmark_bucket": benchmarks_bucket,
         "words_bucket": input_buckets[0],
         "words": list_name,
         "n_mappers": n_mappers,
-        "output_bucket": output_buckets[0]
+        "output_bucket": output_buckets[0],
     }
 
 
 def chunks(lst, n):
     m = int(len(lst) / n)
-    for i in range(n-1):
-        yield lst[i*m:i*m+m]
-    tail = lst[(n-1)*m:]
+    for i in range(n - 1):
+        yield lst[i * m : i * m + m]
+    tail = lst[(n - 1) * m :]
     if len(tail) > 0:
         yield tail
 
@@ -161,22 +157,20 @@ class storage:
 
     def __init__(self):
         self.client = boto3.client(
-            's3',
+            "s3",
             region_name="us-east-1",
             aws_access_key_id="<WHC_AWS_KEY>",
-            aws_secret_access_key="<WHC_AWS_SECRET>"
+            aws_secret_access_key="<WHC_AWS_SECRET>",
         )
 
     @staticmethod
     def unique_name(name):
         name, extension = os.path.splitext(name)
-        return '{name}.{random}{extension}'.format(
-                    name=name,
-                    extension=extension,
-                    random=str(uuid.uuid4()).split('-')[0]
-                )
+        return "{name}.{random}{extension}".format(
+            name=name, extension=extension, random=str(uuid.uuid4()).split("-")[0]
+        )
 
-    def upload(self, bucket, file, filepath, unique_name = True):
+    def upload(self, bucket, file, filepath, unique_name=True):
         incr_io_env_file(filepath, "STORAGE_UPLOAD_BYTES")
 
         key_name = storage.unique_name(file) if unique_name else file
@@ -189,8 +183,8 @@ class storage:
 
     def download_directory(self, bucket, prefix, path):
         objects = self.client.list_objects_v2(Bucket=bucket, Prefix=prefix)
-        for obj in objects['Contents']:
-            file_name = obj['Key']
+        for obj in objects["Contents"]:
+            file_name = obj["Key"]
             path_to_file = os.path.dirname(file_name)
             os.makedirs(os.path.join(path, path_to_file), exist_ok=True)
             self.download(bucket, file_name, os.path.join(path, file_name))
@@ -209,20 +203,23 @@ class storage:
         self.client.download_fileobj(bucket, file, data)
         incr_io_env(data.tell(), "STORAGE_DOWNLOAD_BYTES")
         return data.getbuffer()
-    
+
     def download_within_range(self, bucket, file, start_byte, stop_byte):
-        resp = self.client.get_object(Bucket=bucket, Key=file, Range='bytes={}-{}'.format(start_byte, stop_byte))
-        return resp['Body'].read().decode('utf-8')
+        resp = self.client.get_object(
+            Bucket=bucket, Key=file, Range="bytes={}-{}".format(start_byte, stop_byte)
+        )
+        return resp["Body"].read().decode("utf-8")
 
     def list_directory(self, bucket, prefix):
         objects = self.client.list_objects_v2(Bucket=bucket, Prefix=prefix)
-        for obj in objects['Contents']:
-            yield obj['Key']
+        for obj in objects["Contents"]:
+            yield obj["Key"]
 
     def get_instance():
         if storage.instance is None:
             storage.instance = storage()
         return storage.instance
+
 
 @dag(
     schedule_interval=None,
@@ -234,7 +231,7 @@ def dag_w1_d10():
     @task
     @timing
     def func_1_1(event):
-        logging.info("======= begin: func_1_1 execution =======")
+        logging.info("======= func_1_1 execution start =======")
 
         benchmark_bucket = event["benchmark_bucket"]
         words_bucket = event["words_bucket"]
@@ -242,7 +239,7 @@ def dag_w1_d10():
         words_path = os.path.join("/tmp", "words.txt")
 
         client = storage.get_instance()
-        client.download(benchmark_bucket, words_bucket + '/' + words_blob, words_path)
+        client.download(benchmark_bucket, words_bucket + "/" + words_blob, words_path)
         with open(words_path, "r") as f:
             list = f.read().split("\n")
         os.remove(words_path)
@@ -255,24 +252,22 @@ def dag_w1_d10():
         for chunk in map_lists:
             name = str(uuid.uuid4())[:8]
             data = io.BytesIO()
-            data.writelines((val+"\n").encode("utf-8") for val in chunk)
+            data.writelines((val + "\n").encode("utf-8") for val in chunk)
             data.seek(0)
 
-            name = client.upload_stream(benchmark_bucket, output_bucket + '/' + name, data)
-            stripped_name = name.replace(output_bucket + '/', '')
+            name = client.upload_stream(benchmark_bucket, output_bucket + "/" + name, data)
+            stripped_name = name.replace(output_bucket + "/", "")
             blobs.append(stripped_name)
 
         prefix = str(uuid.uuid4())[:8]
-        lst = [{
-            "benchmark_bucket": benchmark_bucket,
-            "bucket": output_bucket,
-            "blob": b,
-            "prefix": prefix
-        } for b in blobs]
+        lst = [
+            {"benchmark_bucket": benchmark_bucket, "bucket": output_bucket, "blob": b, "prefix": prefix}
+            for b in blobs
+        ]
 
-        return {
-            "list": lst
-        }
+        logging.info("======= func_1_1 execution end =======")
+
+        return {"list": lst}
 
     @task
     @timing
@@ -283,28 +278,46 @@ def dag_w1_d10():
         task_name: str = "func_1_2",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_2 execution =======")
+        current_run_id = get_current_task_run_id(dag_id, task_name)
 
-        event = upstream_output_func_1_1["list"][0]
+        if enable_optimization:
+            # 数据平面优化模式：并行获取上游数据和建立数据库连接
+            tasks = [
+                (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
+                (storage.get_instance, ()),
+            ]
+
+            # 并行执行任务
+            upstream_output, client = execute_parallel_tasks(tasks)
+        else:
+            # 普通模式：串行执行
+            upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
+            client = storage.get_instance()
+
+        logging.info("======= func_1_2 execution start =======")
+
+        event = upstream_output["list"][0]
+
         benchmark_bucket = event["benchmark_bucket"]
         bucket = event["bucket"]
         blob = event["blob"]
         prefix = event["prefix"]
 
-        client = storage.get_instance()
-        my_buffer = client.download_stream(benchmark_bucket, bucket + '/' + blob)
+        my_buffer = client.download_stream(benchmark_bucket, bucket + "/" + blob)
         words = bytes(my_buffer).decode("utf-8").split("\n")
-    
+
         index = count_words(words)
         for word, count in index.items():
             data = io.BytesIO()
             data.write(str(count).encode("utf-8"))
             data.seek(0)
 
-            #client.upload_stream(benchmark_bucket, os.path.join(bucket, prefix, word, blob), data)
+            # client.upload_stream(benchmark_bucket, os.path.join(bucket, prefix, word, blob), data)
             client.upload_stream(benchmark_bucket, os.path.join(prefix, word, blob), data)
 
-        return upstream_output_func_1_1
+        logging.info("======= func_1_2 execution end =======")
+
+        return upstream_output
 
     @task
     @timing
@@ -315,28 +328,45 @@ def dag_w1_d10():
         task_name: str = "func_1_3",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_3 execution =======")
+        current_run_id = get_current_task_run_id(dag_id, task_name)
 
-        event = upstream_output_func_1_1["list"][1]
+        if enable_optimization:
+            # 数据平面优化模式：并行获取上游数据和建立数据库连接
+            tasks = [
+                (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
+                (storage.get_instance, ()),
+            ]
+
+            # 并行执行任务
+            upstream_output, client = execute_parallel_tasks(tasks)
+        else:
+            # 普通模式：串行执行
+            upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
+            client = storage.get_instance()
+
+        logging.info("======= func_1_3 execution start =======")
+
+        event = upstream_output["list"][1]
         benchmark_bucket = event["benchmark_bucket"]
         bucket = event["bucket"]
         blob = event["blob"]
         prefix = event["prefix"]
 
-        client = storage.get_instance()
-        my_buffer = client.download_stream(benchmark_bucket, bucket + '/' + blob)
+        my_buffer = client.download_stream(benchmark_bucket, bucket + "/" + blob)
         words = bytes(my_buffer).decode("utf-8").split("\n")
-    
+
         index = count_words(words)
         for word, count in index.items():
             data = io.BytesIO()
             data.write(str(count).encode("utf-8"))
             data.seek(0)
 
-            #client.upload_stream(benchmark_bucket, os.path.join(bucket, prefix, word, blob), data)
+            # client.upload_stream(benchmark_bucket, os.path.join(bucket, prefix, word, blob), data)
             client.upload_stream(benchmark_bucket, os.path.join(prefix, word, blob), data)
 
-        return upstream_output_func_1_1
+        logging.info("======= func_1_3 execution end =======")
+
+        return upstream_output
 
     @task
     @timing
@@ -347,28 +377,45 @@ def dag_w1_d10():
         task_name: str = "func_1_4",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_4 execution =======")
+        current_run_id = get_current_task_run_id(dag_id, task_name)
 
-        event = upstream_output_func_1_1["list"][2]
+        if enable_optimization:
+            # 数据平面优化模式：并行获取上游数据和建立数据库连接
+            tasks = [
+                (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
+                (storage.get_instance, ()),
+            ]
+
+            # 并行执行任务
+            upstream_output, client = execute_parallel_tasks(tasks)
+        else:
+            # 普通模式：串行执行
+            upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
+            client = storage.get_instance()
+
+        logging.info("======= func_1_4 execution start =======")
+
+        event = upstream_output["list"][2]
         benchmark_bucket = event["benchmark_bucket"]
         bucket = event["bucket"]
         blob = event["blob"]
         prefix = event["prefix"]
 
-        client = storage.get_instance()
-        my_buffer = client.download_stream(benchmark_bucket, bucket + '/' + blob)
+        my_buffer = client.download_stream(benchmark_bucket, bucket + "/" + blob)
         words = bytes(my_buffer).decode("utf-8").split("\n")
-    
+
         index = count_words(words)
         for word, count in index.items():
             data = io.BytesIO()
             data.write(str(count).encode("utf-8"))
             data.seek(0)
 
-            #client.upload_stream(benchmark_bucket, os.path.join(bucket, prefix, word, blob), data)
+            # client.upload_stream(benchmark_bucket, os.path.join(bucket, prefix, word, blob), data)
             client.upload_stream(benchmark_bucket, os.path.join(prefix, word, blob), data)
 
-        return upstream_output_func_1_1
+        logging.info("======= func_1_4 execution end =======")
+
+        return upstream_output
 
     @task
     @timing
@@ -381,30 +428,48 @@ def dag_w1_d10():
         task_name: str = "func_1_5",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_5 execution =======")
+        current_run_id = get_current_task_run_id(dag_id, task_name)
 
-        event = upstream_output_func_1_2
+        if enable_optimization:
+            # 数据平面优化模式：并行获取上游数据和建立数据库连接
+            tasks = [
+                (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
+                (storage.get_instance, ()),
+            ]
+
+            # 并行执行任务
+            upstream_output, client = execute_parallel_tasks(tasks)
+        else:
+            # 普通模式：串行执行
+            upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
+            client = storage.get_instance()
+
+        logging.info("======= func_1_5 execution start =======")
+
+        event = upstream_output
 
         lst = event["list"]
         benchmark_bucket = lst[0]["benchmark_bucket"]
         bucket = lst[0]["bucket"]
         prefix = lst[0]["prefix"]
 
-        client = storage.get_instance()
         dirs = client.list_directory(benchmark_bucket, prefix)
         dirs = [p.split(os.sep)[1] for p in dirs]
         dirs = list(set(dirs))
-        lst = [{
-            "bucket": benchmark_bucket,
-            #"dir": os.path.join(bucket, prefix, path)
-            #TODO add word here.
-            "dir": os.path.join(prefix, path)
-            #"dir": os.path.join(bucket, prefix)
-        } for path in dirs]
+        lst = [
+            {
+                "bucket": benchmark_bucket,
+                # "dir": os.path.join(bucket, prefix, path)
+                # TODO add word here.
+                "dir": os.path.join(prefix, path),
+                # "dir": os.path.join(bucket, prefix)
+            }
+            for path in dirs
+        ]
 
-        return {
-            "list": lst
-        }
+        logging.info("======= func_1_5 execution end =======")
+
+        return {"list": lst}
 
     @task
     @timing
@@ -415,29 +480,43 @@ def dag_w1_d10():
         task_name: str = "func_1_6",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_6 execution =======")
+        current_run_id = get_current_task_run_id(dag_id, task_name)
 
-        event = upstream_output_func_1_5["list"][0]
+        if enable_optimization:
+            # 数据平面优化模式：并行获取上游数据和建立数据库连接
+            tasks = [
+                (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
+                (storage.get_instance, ()),
+            ]
+
+            # 并行执行任务
+            upstream_output, client = execute_parallel_tasks(tasks)
+        else:
+            # 普通模式：串行执行
+            upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
+            client = storage.get_instance()
+        
+        logging.info("======= func_1_6 execution start =======")
+
+        event = upstream_output["list"][0]
 
         bucket = event["bucket"]
         path = event["dir"]
 
-        client = storage.get_instance()
         count = 0
-        #each blob is one word.
-        #for blob in client.list_directory(bucket, path):
+        # each blob is one word.
+        # for blob in client.list_directory(bucket, path):
         for blob in client.list_directory(bucket, path):
             my_buffer = client.download_stream(bucket, blob)
             count += int(bytes(my_buffer).decode("utf-8"))
-            #count += int(my_buffer.getvalue().decode("utf-8"))
+            # count += int(my_buffer.getvalue().decode("utf-8"))
 
         logging.info(f"WHC: word: {os.path.basename(path)}")
         logging.info(f"WHC: count: {count}")
 
-        return {
-            "word": os.path.basename(path),
-            "count": count
-        }
+        logging.info("======= func_1_6 execution end =======")
+
+        return {"word": os.path.basename(path), "count": count}
 
     @task
     @timing
@@ -448,29 +527,43 @@ def dag_w1_d10():
         task_name: str = "func_1_7",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_7 execution =======")
+        current_run_id = get_current_task_run_id(dag_id, task_name)
 
-        event = upstream_output_func_1_5["list"][1]
+        if enable_optimization:
+            # 数据平面优化模式：并行获取上游数据和建立数据库连接
+            tasks = [
+                (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
+                (storage.get_instance, ()),
+            ]
+
+            # 并行执行任务
+            upstream_output, client = execute_parallel_tasks(tasks)
+        else:
+            # 普通模式：串行执行
+            upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
+            client = storage.get_instance()
+
+        logging.info("======= func_1_7 execution start =======")
+
+        event = upstream_output["list"][1]
 
         bucket = event["bucket"]
         path = event["dir"]
 
-        client = storage.get_instance()
         count = 0
-        #each blob is one word.
-        #for blob in client.list_directory(bucket, path):
+        # each blob is one word.
+        # for blob in client.list_directory(bucket, path):
         for blob in client.list_directory(bucket, path):
             my_buffer = client.download_stream(bucket, blob)
             count += int(bytes(my_buffer).decode("utf-8"))
-            #count += int(my_buffer.getvalue().decode("utf-8"))
+            # count += int(my_buffer.getvalue().decode("utf-8"))
 
         logging.info(f"WHC: word: {os.path.basename(path)}")
         logging.info(f"WHC: count: {count}")
 
-        return {
-            "word": os.path.basename(path),
-            "count": count
-        }
+        logging.info("======= func_1_7 execution end =======")
+
+        return {"word": os.path.basename(path), "count": count}
 
     @task
     @timing
@@ -481,30 +574,44 @@ def dag_w1_d10():
         task_name: str = "func_1_8",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_8 execution =======")
+        current_run_id = get_current_task_run_id(dag_id, task_name)
 
-        event = upstream_output_func_1_5["list"][2]
+        if enable_optimization:
+            # 数据平面优化模式：并行获取上游数据和建立数据库连接
+            tasks = [
+                (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
+                (storage.get_instance, ()),
+            ]
+
+            # 并行执行任务
+            upstream_output, client = execute_parallel_tasks(tasks)
+        else:
+            # 普通模式：串行执行
+            upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
+            client = storage.get_instance()
+
+        logging.info("======= func_1_8 execution start =======")
+
+        event = upstream_output["list"][2]
 
         bucket = event["bucket"]
         path = event["dir"]
 
-        client = storage.get_instance()
         count = 0
-        #each blob is one word.
-        #for blob in client.list_directory(bucket, path):
+        # each blob is one word.
+        # for blob in client.list_directory(bucket, path):
         for blob in client.list_directory(bucket, path):
             my_buffer = client.download_stream(bucket, blob)
             count += int(bytes(my_buffer).decode("utf-8"))
-            #count += int(my_buffer.getvalue().decode("utf-8"))
+            # count += int(my_buffer.getvalue().decode("utf-8"))
 
         logging.info(f"WHC: word: {os.path.basename(path)}")
         logging.info(f"WHC: count: {count}")
 
-        return {
-            "word": os.path.basename(path),
-            "count": count
-        }
-    
+        logging.info("======= func_1_8 execution end =======")
+
+        return {"word": os.path.basename(path), "count": count}
+
     @task
     @timing
     def func_1_9(
@@ -514,29 +621,43 @@ def dag_w1_d10():
         task_name: str = "func_1_9",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_9 execution =======")
+        current_run_id = get_current_task_run_id(dag_id, task_name)
 
-        event = upstream_output_func_1_5["list"][3]
+        if enable_optimization:
+            # 数据平面优化模式：并行获取上游数据和建立数据库连接
+            tasks = [
+                (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
+                (storage.get_instance, ()),
+            ]
+
+            # 并行执行任务
+            upstream_output, client = execute_parallel_tasks(tasks)
+        else:
+            # 普通模式：串行执行
+            upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
+            client = storage.get_instance()
+
+        logging.info("======= func_1_9 execution start =======")
+
+        event = upstream_output["list"][3]
 
         bucket = event["bucket"]
         path = event["dir"]
 
-        client = storage.get_instance()
         count = 0
-        #each blob is one word.
-        #for blob in client.list_directory(bucket, path):
+        # each blob is one word.
+        # for blob in client.list_directory(bucket, path):
         for blob in client.list_directory(bucket, path):
             my_buffer = client.download_stream(bucket, blob)
             count += int(bytes(my_buffer).decode("utf-8"))
-            #count += int(my_buffer.getvalue().decode("utf-8"))
+            # count += int(my_buffer.getvalue().decode("utf-8"))
 
         logging.info(f"WHC: word: {os.path.basename(path)}")
         logging.info(f"WHC: count: {count}")
 
-        return {
-            "word": os.path.basename(path),
-            "count": count
-        }
+        logging.info("======= func_1_9 execution end =======")
+
+        return {"word": os.path.basename(path), "count": count}
 
     @task
     @timing
@@ -547,35 +668,55 @@ def dag_w1_d10():
         task_name: str = "func_1_10",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_10 execution =======")
-        
-        event = upstream_output_func_1_5["list"][4]
+        current_run_id = get_current_task_run_id(dag_id, task_name)
+
+        if enable_optimization:
+            # 数据平面优化模式：并行获取上游数据和建立数据库连接
+            tasks = [
+                (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
+                (storage.get_instance, ()),
+            ]
+
+            # 并行执行任务
+            upstream_output, client = execute_parallel_tasks(tasks)
+        else:
+            # 普通模式：串行执行
+            upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
+            client = storage.get_instance()
+
+        logging.info("======= func_1_10 execution start =======")
+
+        event = upstream_output["list"][4]
 
         bucket = event["bucket"]
         path = event["dir"]
 
-        client = storage.get_instance()
         count = 0
-        #each blob is one word.
-        #for blob in client.list_directory(bucket, path):
+        # each blob is one word.
+        # for blob in client.list_directory(bucket, path):
         for blob in client.list_directory(bucket, path):
             my_buffer = client.download_stream(bucket, blob)
             count += int(bytes(my_buffer).decode("utf-8"))
-            #count += int(my_buffer.getvalue().decode("utf-8"))
+            # count += int(my_buffer.getvalue().decode("utf-8"))
 
         logging.info(f"WHC: word: {os.path.basename(path)}")
         logging.info(f"WHC: count: {count}")
 
-        return {
-            "word": os.path.basename(path),
-            "count": count
-        }
+        logging.info("======= func_1_10 execution end =======")
 
+        return {"word": os.path.basename(path), "count": count}
 
     # DAG execution with optimization control
     _enable_optimization = False
 
-    func_1_1_output = func_1_1(event=generate_input(size="large", benchmarks_bucket="sebs-benchmarks-bucket-20250917", input_buckets=["benchmarks/660-map-reduce"], output_buckets=["benchmarks/660-map-reduce"]))
+    func_1_1_output = func_1_1(
+        event=generate_input(
+            size="large",
+            benchmarks_bucket="sebs-benchmarks-bucket-20250917",
+            input_buckets=["benchmarks/660-map-reduce"],
+            output_buckets=["benchmarks/660-map-reduce"],
+        )
+    )
 
     func_1_2_output = func_1_2(
         upstream_output_func_1_1=func_1_1_output,

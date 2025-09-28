@@ -251,12 +251,10 @@ def dag_w1_d7():
     @task
     @timing
     def func_1_1(event):
-        logging.info("======= begin: func_1_1 execution =======")
+        logging.info("======= func_1_1 execution start =======")
 
         nosql_client = nosql.get_instance()
         nosql_table_name = "hotel_booking"
-
-        logging.info("======= middle 1: func_1_1 execution =======")
 
         expected_result = event["expected_result"]
         if expected_result["result"] == "failure" and expected_result["reason"] == "hotel":
@@ -270,8 +268,6 @@ def dag_w1_d7():
         hotel_price = "130"
         hotel_name = "BestEver Hotel"
 
-        logging.info("======= middle 2: func_1_1 execution =======")
-
         nosql_client.insert(
             nosql_table_name,
             ("trip_id", trip_id),
@@ -284,7 +280,7 @@ def dag_w1_d7():
             },
         )
 
-        logging.info("======= end: func_1_1 execution =======")
+        logging.info("======= func_1_1 execution end =======")
 
         return {"trip_id": trip_id, "booking_id": hotel_booking_id, **event}
 
@@ -297,8 +293,6 @@ def dag_w1_d7():
         task_name: str = "func_1_2",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_2 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
@@ -314,6 +308,8 @@ def dag_w1_d7():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             nosql_client = nosql.get_instance()
+
+        logging.info("======= func_1_2 execution start =======")
 
         event = upstream_output
 
@@ -343,6 +339,8 @@ def dag_w1_d7():
             },
         )
 
+        logging.info("======= func_1_2 execution end =======")
+
         return {"trip_id": trip_id, "rental_id": rental_id, **event}
 
     @task
@@ -354,8 +352,6 @@ def dag_w1_d7():
         task_name: str = "func_1_3",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_3 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
@@ -373,6 +369,8 @@ def dag_w1_d7():
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             nosql_client = nosql.get_instance()
             logging.info("WHC: nosql_client: %s", nosql_client)
+
+        logging.info("======= func_1_3 execution start =======")
 
         event = upstream_output
 
@@ -404,6 +402,8 @@ def dag_w1_d7():
             },
         )
 
+        logging.info("======= func_1_3 execution end =======")
+
         return {"trip_id": trip_id, "flight_id": flight_id, **event}
 
     @task
@@ -415,8 +415,6 @@ def dag_w1_d7():
         task_name: str = "func_1_4",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_4 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
@@ -432,6 +430,8 @@ def dag_w1_d7():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             nosql_client = nosql.get_instance()
+
+        logging.info("======= func_1_4 execution start =======")
 
         event = upstream_output
 
@@ -469,6 +469,8 @@ def dag_w1_d7():
             {"status": "booked"},
         )
 
+        logging.info("======= func_1_4 execution end =======")
+
         return {"trip_id": trip_id, **event}
 
     @task
@@ -480,8 +482,6 @@ def dag_w1_d7():
         task_name: str = "func_1_5",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_5 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
@@ -497,6 +497,8 @@ def dag_w1_d7():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             nosql_client = nosql.get_instance()
+
+        logging.info("======= func_1_5 execution start =======")
 
         event = upstream_output
 
@@ -509,6 +511,8 @@ def dag_w1_d7():
 
         event.pop("flight_id")
 
+        logging.info("======= func_1_5 execution end =======")
+
         return event
 
     @task
@@ -520,8 +524,6 @@ def dag_w1_d7():
         task_name: str = "func_1_6",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_6 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
@@ -537,6 +539,8 @@ def dag_w1_d7():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             nosql_client = nosql.get_instance()
+
+        logging.info("======= func_1_6 execution start =======")
 
         event = upstream_output
 
@@ -549,6 +553,8 @@ def dag_w1_d7():
 
         event.pop("rental_id")
 
+        logging.info("======= func_1_6 execution end =======")
+
         return event
 
     @task
@@ -560,8 +566,6 @@ def dag_w1_d7():
         task_name: str = "func_1_7",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_7 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
@@ -578,6 +582,8 @@ def dag_w1_d7():
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             nosql_client = nosql.get_instance()
 
+        logging.info("======= func_1_7 execution start=======")
+
         event = upstream_output
 
         trip_id = event["trip_id"]
@@ -586,6 +592,8 @@ def dag_w1_d7():
         nosql_table_name = "hotel_booking"
         booking_id = event["booking_id"]
         nosql_client.delete(nosql_table_name, ("trip_id", trip_id), ("booking_id", booking_id))
+
+        logging.info("======= func_1_7 execution end =======")
 
         return {"trip_id": trip_id, "status": "failure"}
 

@@ -395,13 +395,15 @@ def dag_w1_d17():
     @task
     @timing
     def func_1_1(event):
-        logging.info("======= begin: func_1_1 execution =======")
+        logging.info("======= func_1_1 execution start =======")
 
         segs = chunks(event["segments"], event["batch_size"])
         input_bucket = event["input_bucket"]
         output_bucket = event["output_bucket"]
         benchmark_bucket = event["benchmark_bucket"]
         quality = event["quality"]
+
+        logging.info("======= func_1_1 execution end =======")
 
         return {
             "segments": [
@@ -426,15 +428,13 @@ def dag_w1_d17():
         task_name: str = "func_1_2",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_2 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -443,6 +443,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_2 execution start =======")
 
         event = upstream_output["segments"][0]
 
@@ -469,6 +471,8 @@ def dag_w1_d17():
         upload_files(benchmark_bucket, output_bucket, output_paths, prefix)
 
         shutil.rmtree(data_dir)
+
+        logging.info("======= func_1_2 execution end =======")
 
         return upstream_output
 
@@ -481,15 +485,13 @@ def dag_w1_d17():
         task_name: str = "func_1_3",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_3 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -498,6 +500,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_3 execution start =======")
 
         event = upstream_output["segments"][0]
 
@@ -527,6 +531,8 @@ def dag_w1_d17():
         upload_files(benchmark_bucket, output_bucket, output_paths, prefix)
 
         shutil.rmtree(data_dir)
+
+        logging.info("======= func_1_3 execution end =======")
 
         return upstream_output
 
@@ -539,15 +545,13 @@ def dag_w1_d17():
         task_name: str = "func_1_4",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_4 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -556,6 +560,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_4 execution start =======")
 
         event = upstream_output["segments"][0]
 
@@ -595,6 +601,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_4 execution end =======")
+
         return upstream_output
 
     @task
@@ -606,15 +614,13 @@ def dag_w1_d17():
         task_name: str = "func_1_5",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_5 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -623,6 +629,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_5 execution start =======")
 
         event = upstream_output["segments"][1]
 
@@ -649,6 +657,8 @@ def dag_w1_d17():
         upload_files(benchmark_bucket, output_bucket, output_paths, prefix)
 
         shutil.rmtree(data_dir)
+
+        logging.info("======= func_1_5 execution end =======")
 
         return upstream_output
 
@@ -661,15 +671,13 @@ def dag_w1_d17():
         task_name: str = "func_1_6",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_6 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -678,6 +686,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_6 execution start =======")
 
         event = upstream_output["segments"][1]
 
@@ -707,6 +717,8 @@ def dag_w1_d17():
         upload_files(benchmark_bucket, output_bucket, output_paths, prefix)
 
         shutil.rmtree(data_dir)
+
+        logging.info("======= func_1_6 execution end =======")
 
         return upstream_output
 
@@ -719,15 +731,13 @@ def dag_w1_d17():
         task_name: str = "func_1_7",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_7 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -736,6 +746,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_7 execution start =======")
 
         event = upstream_output["segments"][1]
 
@@ -775,6 +787,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_7 execution end =======")
+
         return upstream_output
 
     @task
@@ -786,15 +800,13 @@ def dag_w1_d17():
         task_name: str = "func_1_8",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_8 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -803,6 +815,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_8 execution start =======")
 
         event = upstream_output["segments"][2]
 
@@ -829,6 +843,8 @@ def dag_w1_d17():
         upload_files(benchmark_bucket, output_bucket, output_paths, prefix)
 
         shutil.rmtree(data_dir)
+
+        logging.info("======= func_1_8 execution end =======")
 
         return upstream_output
 
@@ -841,15 +857,13 @@ def dag_w1_d17():
         task_name: str = "func_1_9",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_9 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -858,6 +872,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_9 execution start =======")
 
         event = upstream_output["segments"][2]
 
@@ -887,6 +903,8 @@ def dag_w1_d17():
         upload_files(benchmark_bucket, output_bucket, output_paths, prefix)
 
         shutil.rmtree(data_dir)
+
+        logging.info("======= func_1_9 execution end =======")
 
         return upstream_output
 
@@ -899,15 +917,13 @@ def dag_w1_d17():
         task_name: str = "func_1_10",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_10 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -916,6 +932,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_10 execution start =======")
 
         event = upstream_output["segments"][2]
 
@@ -955,6 +973,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_10 execution end =======")
+
         return upstream_output
 
     @task
@@ -966,15 +986,13 @@ def dag_w1_d17():
         task_name: str = "func_1_11",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_11 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -983,6 +1001,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_11 execution start =======")
 
         event = upstream_output["segments"][3]
 
@@ -1009,6 +1029,8 @@ def dag_w1_d17():
         upload_files(benchmark_bucket, output_bucket, output_paths, prefix)
 
         shutil.rmtree(data_dir)
+
+        logging.info("======= func_1_11 execution end =======")
 
         return upstream_output
 
@@ -1021,15 +1043,13 @@ def dag_w1_d17():
         task_name: str = "func_1_12",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_12 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -1038,6 +1058,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_12 execution start =======")
 
         event = upstream_output["segments"][3]
 
@@ -1068,6 +1090,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_12 execution end =======")
+
         return upstream_output
 
     @task
@@ -1079,15 +1103,13 @@ def dag_w1_d17():
         task_name: str = "func_1_13",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_13 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -1096,6 +1118,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_13 execution start =======")
 
         event = upstream_output["segments"][3]
 
@@ -1135,6 +1159,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_13 execution end =======")
+
         return upstream_output
 
     @task
@@ -1146,15 +1172,13 @@ def dag_w1_d17():
         task_name: str = "func_1_14",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_14 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -1163,6 +1187,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_14 execution start =======")
 
         event = upstream_output["segments"][4]
 
@@ -1190,6 +1216,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_14 execution end =======")
+
         return upstream_output
 
     @task
@@ -1201,15 +1229,13 @@ def dag_w1_d17():
         task_name: str = "func_1_15",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_15 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -1218,6 +1244,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_15 execution start =======")
 
         event = upstream_output["segments"][4]
 
@@ -1248,6 +1276,8 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_15 execution end =======")
+
         return upstream_output
 
     @task
@@ -1259,15 +1289,13 @@ def dag_w1_d17():
         task_name: str = "func_1_16",
         enable_optimization: bool = True,
     ):
-        logging.info("======= func_1_16 execution =======")
-
         current_run_id = get_current_task_run_id(dag_id, task_name)
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance(), ()),
+                (storage.get_instance, ()),
             ]
 
             # 并行执行任务
@@ -1276,6 +1304,8 @@ def dag_w1_d17():
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
             client = storage.get_instance()
+
+        logging.info("======= func_1_16 execution start =======")
 
         event = upstream_output["segments"][4]
 
@@ -1315,10 +1345,12 @@ def dag_w1_d17():
 
         shutil.rmtree(data_dir)
 
+        logging.info("======= func_1_16 execution end =======")
+
         return upstream_output
 
     # DAG execution with optimization control
-    _enable_optimization = False
+    _enable_optimization = True
 
     func_1_1_output = func_1_1(
         event=generate_input(
