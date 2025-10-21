@@ -1404,7 +1404,7 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
                 )
             else:
                 active_runs_of_dags[dag_run.dag_id] += 1
-                self.log.info(f"WHCIMP: WHC_E2E_LATENCY: WHC_E2E_BREAKDOWN: update dag_run {dag_run} from {dag_run.state} to RUNNING")
+                self.log.info(f"WHCIMP: WHC_REAL_APP_BREAKDOWN: WHC_E2E_LATENCY: WHC_E2E_BREAKDOWN: update dag_run {dag_run} from {dag_run.state} to RUNNING")
                 _update_state(dag, dag_run)
                 dag_run.notify_dagrun_state_changed()
 

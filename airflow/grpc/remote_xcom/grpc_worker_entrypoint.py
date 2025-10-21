@@ -31,7 +31,7 @@ class InvokeWorker(remote_xcom_pb2_grpc.TaskRunServicer):
         log.info(f"init_finish")
         
     def HandleTask(self, request, context):
-        log.info(f"Received job !")
+        log.info(f"WHC: WHC_REAL_APP_BREAKDOWN: Received job !")
         args = request.args
         log.info(f"args: {args}")
         start_time = perf_counter()
