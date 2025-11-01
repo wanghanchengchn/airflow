@@ -2280,6 +2280,12 @@ cleanup:
 # Not recommended for production
 postgresql:
   enabled: true
+  # Use official PostgreSQL image instead of Bitnami
+  image:
+    registry: docker.io
+    repository: postgres
+    tag: "16.9-bullseye"
+    pullPolicy: IfNotPresent
   auth:
     enablePostgresUser: true
     postgresPassword: postgres

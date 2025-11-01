@@ -495,10 +495,10 @@ def _execute_task(task_instance: TaskInstance | TaskInstancePydantic, context: C
             task_to_execute.on_kill()
             raise
     else:
-        log.info("WHC: STARTING EXECUTE %s", task_to_execute.task_id)
+        log.info("WHC: WHC_REAL_APP_BREAKDOWN: STARTING EXECUTE %s", task_to_execute.task_id)
         with task_timer(task_instance, f"Execute {task_to_execute.__class__.__name__}"):
             result = execute_callable(context=context, **execute_callable_kwargs)
-        log.info("WHC: FINISHED EXECUTE %s", task_to_execute.task_id)
+        log.info("WHC: WHC_REAL_APP_BREAKDOWN: FINISHED EXECUTE %s", task_to_execute.task_id)
 
     log.info("WHC: STARTING XCOM PUSH AND TASK MAPPING")
     with task_timer(task_instance, "XCom push and task mapping"):
@@ -1205,7 +1205,7 @@ def _log_state(*, task_instance: TaskInstance | TaskInstancePydantic, lead_msg: 
         task_instance.dag_id,
         task_instance.task_id,
     ]
-    message = "%sMarking task as %s. dag_id=%s, task_id=%s, "
+    message = "%sWHC: WHC_REAL_APP_BREAKDOWN: Marking task as %s. dag_id=%s, task_id=%s, "
     if task_instance.map_index >= 0:
         params.append(task_instance.map_index)
         message += "map_index=%d, "
