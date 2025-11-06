@@ -343,7 +343,7 @@ def dag_w1_d5():
     ):
         logging.info("======= func_1_2 execution start =======")
 
-        client = storage.get_instance()
+        net = load_model("sebs-benchmarks-bucket-20250917", "benchmarks/650-vid/frozen_inference_graph.pb", "benchmarks/650-vid/faster_rcnn_resnet50_coco_2018_01_28.pbtxt", "/tmp")
 
         event = upstream_output_func_1_1["frames"][0]
 
@@ -352,7 +352,7 @@ def dag_w1_d5():
         benchmark_bucket = event["benchmark_bucket"]
 
         frames = list(load_frames(benchmark_bucket, event["frames_bucket"], event["frames"], tmp_dir))
-        net = load_model(benchmark_bucket, event["model_bucket"] + '/' + event["model_weights"], event["model_bucket"] + '/' + event["model_config"], tmp_dir)
+        # net = load_model(benchmark_bucket, event["model_bucket"] + '/' + event["model_weights"], event["model_bucket"] + '/' + event["model_config"], tmp_dir)
 
         preds = [detect(net, frame) for frame in frames]
 
@@ -376,7 +376,7 @@ def dag_w1_d5():
     ):
         logging.info("======= func_1_3 execution start =======")
 
-        client = storage.get_instance()
+        net = load_model("sebs-benchmarks-bucket-20250917", "benchmarks/650-vid/frozen_inference_graph.pb", "benchmarks/650-vid/faster_rcnn_resnet50_coco_2018_01_28.pbtxt", "/tmp")
 
         event = upstream_output_func_1_1["frames"][1]
 
@@ -385,7 +385,7 @@ def dag_w1_d5():
         benchmark_bucket = event["benchmark_bucket"]
 
         frames = list(load_frames(benchmark_bucket, event["frames_bucket"], event["frames"], tmp_dir))
-        net = load_model(benchmark_bucket, event["model_bucket"] + '/' + event["model_weights"], event["model_bucket"] + '/' + event["model_config"], tmp_dir)
+        # net = load_model(benchmark_bucket, event["model_bucket"] + '/' + event["model_weights"], event["model_bucket"] + '/' + event["model_config"], tmp_dir)
 
         preds = [detect(net, frame) for frame in frames]
 
