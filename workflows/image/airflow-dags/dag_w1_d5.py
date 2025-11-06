@@ -347,15 +347,15 @@ def dag_w1_d5():
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance, ()),
+                (load_model, ("sebs-benchmarks-bucket-20250917", "benchmarks/650-vid/frozen_inference_graph.pb", "benchmarks/650-vid/faster_rcnn_resnet50_coco_2018_01_28.pbtxt", "/tmp")),
             ]
 
             # 并行执行任务
-            upstream_output, client = execute_parallel_tasks(tasks)
+            upstream_output, net = execute_parallel_tasks(tasks)
         else:
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
-            client = storage.get_instance()
+            net = load_model("sebs-benchmarks-bucket-20250917", "benchmarks/650-vid/frozen_inference_graph.pb", "benchmarks/650-vid/faster_rcnn_resnet50_coco_2018_01_28.pbtxt", "/tmp")
 
         logging.info("======= func_1_2 execution start =======")
 
@@ -366,7 +366,6 @@ def dag_w1_d5():
         benchmark_bucket = event["benchmark_bucket"]
 
         frames = list(load_frames(benchmark_bucket, event["frames_bucket"], event["frames"], tmp_dir))
-        net = load_model(benchmark_bucket, event["model_bucket"] + '/' + event["model_weights"], event["model_bucket"] + '/' + event["model_config"], tmp_dir)
 
         preds = [detect(net, frame) for frame in frames]
 
@@ -394,15 +393,15 @@ def dag_w1_d5():
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
             tasks = [
                 (get_upstream_task_value, (dag_id, task_name, current_run_id, upstream_task_id)),
-                (storage.get_instance, ()),
+                (load_model, ("sebs-benchmarks-bucket-20250917", "benchmarks/650-vid/frozen_inference_graph.pb", "benchmarks/650-vid/faster_rcnn_resnet50_coco_2018_01_28.pbtxt", "/tmp")),
             ]
 
             # 并行执行任务
-            upstream_output, client = execute_parallel_tasks(tasks)
+            upstream_output, net = execute_parallel_tasks(tasks)
         else:
             # 普通模式：串行执行
             upstream_output = get_upstream_task_value(dag_id, task_name, current_run_id, upstream_task_id)
-            client = storage.get_instance()
+            net = load_model("sebs-benchmarks-bucket-20250917", "benchmarks/650-vid/frozen_inference_graph.pb", "benchmarks/650-vid/faster_rcnn_resnet50_coco_2018_01_28.pbtxt", "/tmp")
 
         logging.info("======= func_1_3 execution start =======")
         
@@ -413,7 +412,6 @@ def dag_w1_d5():
         benchmark_bucket = event["benchmark_bucket"]
 
         frames = list(load_frames(benchmark_bucket, event["frames_bucket"], event["frames"], tmp_dir))
-        net = load_model(benchmark_bucket, event["model_bucket"] + '/' + event["model_weights"], event["model_bucket"] + '/' + event["model_config"], tmp_dir)
 
         preds = [detect(net, frame) for frame in frames]
 
@@ -472,7 +470,7 @@ def dag_w1_d5():
         
     
     # DAG execution with optimization control
-    _enable_optimization = False
+    _enable_optimization = True
 
     func_1_1_output = func_1_1(event=generate_input(size="small", benchmarks_bucket="sebs-benchmarks-bucket-20250917", input_buckets=["benchmarks/650-vid"], output_buckets=["benchmarks/650-vid"]))
 
