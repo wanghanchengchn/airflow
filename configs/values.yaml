@@ -2291,6 +2291,9 @@ postgresql:
     postgresPassword: postgres
     username: ""
     password: ""
+  primary:
+    nodeSelector:
+      loader-nodetype: master
 
 # Config settings to go into the mounted airflow.cfg
 #

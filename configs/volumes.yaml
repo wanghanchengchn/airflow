@@ -10,6 +10,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data0"
 
@@ -26,6 +34,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data1"
 
@@ -42,6 +58,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data2"
 
@@ -58,6 +82,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data3"
 
@@ -74,6 +106,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data4"
 
@@ -90,6 +130,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data5"
 
@@ -106,6 +154,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data6"
 
@@ -122,6 +178,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data7"
 
@@ -138,6 +202,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data8"
 
@@ -154,6 +226,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data9"
 
@@ -170,6 +250,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data10"
 
@@ -186,6 +274,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data11"
 
@@ -202,6 +298,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data12"
 
@@ -218,6 +322,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data13"
 
@@ -234,6 +346,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data14"
 
@@ -250,6 +370,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data15"
 
@@ -266,6 +394,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data16"
 
@@ -282,6 +418,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data17"
 
@@ -298,6 +442,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data18"
 
@@ -314,6 +466,14 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: loader-nodetype
+          operator: In
+          values:
+          - master
   hostPath:
     path: "/mnt/data19"
 
