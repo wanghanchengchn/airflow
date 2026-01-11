@@ -86,7 +86,7 @@ core:
       version_added: ~
       type: string
       example: ~
-      default: "32"
+      default: "64"
     max_active_tasks_per_dag:
       description: |
         The maximum number of task instances allowed to run concurrently in each DAG. To calculate
@@ -99,7 +99,7 @@ core:
       version_added: 2.2.0
       type: string
       example: ~
-      default: "16"
+      default: "64"
     dags_are_paused_at_creation:
       description: |
         Are DAGs paused by default at creation
@@ -2235,7 +2235,7 @@ scheduler:
       version_added: ~
       type: integer
       example: ~
-      default: "16"
+      default: "64"
     use_row_level_locking:
       description: |
         Should the scheduler issue ``SELECT ... FOR UPDATE`` in relevant queries.

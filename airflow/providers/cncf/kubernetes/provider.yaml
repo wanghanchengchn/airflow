@@ -229,7 +229,7 @@ config:
         version_added: ~
         type: string
         example: ~
-        default: "1"
+        default: "64"
       multi_namespace_mode:
         description: |
           Allows users to launch pods in multiple namespaces.

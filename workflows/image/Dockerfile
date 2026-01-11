@@ -1,4 +1,4 @@
-FROM apache/airflow:2.8.0
+FROM wanghanchengchn/airflow-worker-nehalem90-version:latest
 STOPSIGNAL SIGINT
 USER root
 RUN apt-get update && apt-get install -y \

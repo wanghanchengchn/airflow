@@ -349,7 +349,7 @@ class AirflowKubernetesScheduler(LoggingMixin):
         # load kn service urls asynchronously
         self._worker_service_urls_future = self.executor_pool.submit(self._retrieve_kn_service_urls)    
         
-        self.pod_task_pool = concurrent.futures.ThreadPoolExecutor(max_workers=32)
+        self.pod_task_pool = concurrent.futures.ThreadPoolExecutor(max_workers=64)
 
     def _retrieve_kn_service_urls(self):
         while True:

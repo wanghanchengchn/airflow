@@ -2294,6 +2294,10 @@ postgresql:
   primary:
     nodeSelector:
       loader-nodetype: master
+    # 增加最大连接数以支持更多并行任务
+    args:
+      - "-c"
+      - "max_connections=800"
 
 # Config settings to go into the mounted airflow.cfg
 #

@@ -15,6 +15,7 @@ echo "Start time: $START_TIME"
 log_dir=./benchmark/"$(date +%s)"
 mkdir -p "$log_dir"
 kubectl port-forward svc/airflow-webserver 8080:8080 --namespace airflow 1>/dev/null 2>&1 &
+sleep 2  # 等待端口转发建立
 
 for i in $(seq 1 $REPETITION)
 do
