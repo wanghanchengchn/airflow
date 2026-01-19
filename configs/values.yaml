@@ -363,6 +363,27 @@ extraConfigMaps: {}
 extraEnv: |
   - name: AIRFLOW__API__AUTH_BACKENDS
     value: 'airflow.api.auth.backend.session,airflow.api.auth.backend.basic_auth'
+  - name: AIRFLOW__CORE__PARALLELISM
+    value: '2000'
+  - name: AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG
+    value: '150'
+  - name: AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG
+    value: '2000'
+  - name: AIRFLOW__SCHEDULER__MAX_DAGRUNS_TO_CREATE_PER_LOOP
+    value: '100'
+  - name: AIRFLOW__SCHEDULER__MAX_DAGRUNS_PER_LOOP_TO_SCHEDULE
+    value: '200'
+  - name: AIRFLOW__SCHEDULER__SCHEDULER_HEARTBEAT_SEC
+    value: '1'
+  - name: AIRFLOW__DATABASE__SQL_ALCHEMY_POOL_SIZE
+    value: '50'
+  - name: AIRFLOW__DATABASE__SQL_ALCHEMY_MAX_OVERFLOW
+    value: '50'
+  - name: AIRFLOW__SCHEDULER__MAX_TIS_PER_QUERY
+    value: '1500'
+  - name: AIRFLOW__KUBERNETES_EXECUTOR__WORKER_PODS_CREATION_BATCH_SIZE
+    value: '1500'
+
 # eg:
 # extraEnv: |
 #   - name: AIRFLOW__CORE__LOAD_EXAMPLES
@@ -2297,7 +2318,7 @@ postgresql:
     # 增加最大连接数以支持更多并行任务
     args:
       - "-c"
-      - "max_connections=800"
+      - "max_connections=60000"
 
 # Config settings to go into the mounted airflow.cfg
 #

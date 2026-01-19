@@ -70,7 +70,7 @@ def execute_parallel_tasks(tasks):
     Returns:
         返回所有任务的结果列表
     """
-    with ThreadPoolExecutor(max_workers=64) as executor:
+    with ThreadPoolExecutor(max_workers=300) as executor:
         futures = [executor.submit(func, *args) for func, args in tasks]
         results = [future.result() for future in futures]
         return results
