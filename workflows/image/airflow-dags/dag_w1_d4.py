@@ -142,7 +142,8 @@ def dag_w1_d4():
         dag_id: str = 'dag_w1_d4',
         upstream_task_id: str = 'func_1_1',
         task_name: str = 'func_1_2',
-        enable_optimization: bool = True
+        enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}"
     ) -> int:
         """执行并行的固定睡眠和动态睡眠任务
 
@@ -157,7 +158,7 @@ def dag_w1_d4():
         Returns:
             int: 从上游任务获取的睡眠时间
         """
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式
@@ -194,7 +195,8 @@ def dag_w1_d4():
         dag_id: str = 'dag_w1_d4',
         upstream_task_id: str = 'func_1_2',
         task_name: str = 'func_1_3',
-        enable_optimization: bool = True
+        enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}"
     ) -> int:
         """执行并行的固定睡眠和动态睡眠任务
 
@@ -209,7 +211,7 @@ def dag_w1_d4():
         Returns:
             int: 从上游任务获取的睡眠时间
         """
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             tasks = [
@@ -246,7 +248,8 @@ def dag_w1_d4():
         dag_id: str = 'dag_w1_d4',
         upstream_task_id: str = 'func_1_3',
         task_name: str = 'func_1_4',
-        enable_optimization: bool = True
+        enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}"
     ) -> int:
         """执行并行的固定睡眠和动态睡眠任务
 
@@ -261,7 +264,7 @@ def dag_w1_d4():
         Returns:
             int: 从上游任务获取的睡眠时间
         """
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             tasks = [
@@ -294,11 +297,11 @@ def dag_w1_d4():
 
     func_1_1_output = func_1_1(sleep_time_ms = sleep_time_ms, dynamic_ratio=1, task_name='func_1_1')
     
-    func_1_2_output = func_1_2(sleep_time_ms = func_1_1_output, fixed_sleep_seconds=(sleep_time_ms / 1000) /2, dynamic_ratio=0.5, dag_id='dag_w1_d4', upstream_task_id='func_1_1', task_name='func_1_2', enable_optimization=_enable_optimization)
+    func_1_2_output = func_1_2(sleep_time_ms = func_1_1_output, fixed_sleep_seconds=(sleep_time_ms / 1000) /2, dynamic_ratio=0.5, dag_id='dag_w1_d4', upstream_task_id='func_1_1', task_name='func_1_2', enable_optimization=_enable_optimization, run_id="{{ run_id }}")
     
-    func_1_3_output = func_1_3(sleep_time_ms = func_1_2_output, fixed_sleep_seconds=(sleep_time_ms / 1000) /2, dynamic_ratio=0.5, dag_id='dag_w1_d4', upstream_task_id='func_1_2', task_name='func_1_3', enable_optimization=_enable_optimization)
+    func_1_3_output = func_1_3(sleep_time_ms = func_1_2_output, fixed_sleep_seconds=(sleep_time_ms / 1000) /2, dynamic_ratio=0.5, dag_id='dag_w1_d4', upstream_task_id='func_1_2', task_name='func_1_3', enable_optimization=_enable_optimization, run_id="{{ run_id }}")
     
-    func_1_4(sleep_time_ms = func_1_3_output, fixed_sleep_seconds=(sleep_time_ms / 1000) /2, dynamic_ratio=0.5, dag_id='dag_w1_d4', upstream_task_id='func_1_3', task_name='func_1_4', enable_optimization=_enable_optimization)
+    func_1_4(sleep_time_ms = func_1_3_output, fixed_sleep_seconds=(sleep_time_ms / 1000) /2, dynamic_ratio=0.5, dag_id='dag_w1_d4', upstream_task_id='func_1_3', task_name='func_1_4', enable_optimization=_enable_optimization, run_id="{{ run_id }}")
     
 # execute dag
 etl_dag = dag_w1_d4()
