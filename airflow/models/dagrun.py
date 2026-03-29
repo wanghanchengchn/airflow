@@ -799,7 +799,7 @@ class DagRun(Base, LoggingMixin):
                 self.data_interval_end,
                 self.dag_hash,
             )
-            self.log.info("WHC: WHC_REAL_APP_BREAKDOWN: WHC_E2E_LATENCY: WHC_E2E_BREAKDOWN: Marking run %s state=%s", self.dag_id, self._state)
+            self.log.info("WHC: WHC_REAL_APP_BREAKDOWN: WHC_E2E_LATENCY: WHC_E2E_BREAKDOWN: Marking run %s run_id=%s state=%s", self.dag_id, self.run_id, self._state)
             session.flush()
 
         self._emit_true_scheduling_delay_stats_for_finished_state(finished_tis)
