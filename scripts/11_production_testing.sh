@@ -56,7 +56,7 @@ do
 
     if [ "$minute" -lt "$TOTAL_MINUTES" ]; then
         ELAPSED=$(( $(date +%s) - BATCH_START ))
-        REMAINING=$((120 - ELAPSED))
+        REMAINING=$((60 - ELAPSED))
         if [ "$REMAINING" -gt 0 ]; then
             echo "  Waiting ${REMAINING}s before next batch (batch took ${ELAPSED}s)..."
             sleep "$REMAINING"
@@ -81,17 +81,6 @@ grep WHC_E2E_LATENCY "$log_dir"/log_scheduler.log > "$log_dir"/log_whc_e2e_laten
 
 echo "Scheduler log lines collected:      $(wc -l < "$log_dir"/log_scheduler.log)"
 echo "Raw WHC_E2E_LATENCY lines collected: $(wc -l < "$log_dir"/log_whc_e2e_latency.log)"
-
-################################################################################################################
-echo "Collecting worker logs..."
-
-DAG_POD_PREFIX="${DAG_NAME//_/-}"
-worker_pods=$(kubectl -n airflow get pods | grep "worker-${DAG_POD_PREFIX}-" | awk '{print $1}' | sort -V)
-worker_count=0
-
-echo "Worker pods found: $worker_count"
-echo "Logs saved to: $log_dir"
-echo " "
 
 ################################################################################################################
 echo "=== E2E Latencies (seconds) ==="

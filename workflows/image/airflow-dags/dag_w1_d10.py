@@ -284,6 +284,7 @@ def dag_w1_d10():
         upstream_task_id: str = "func_1_1",
         task_name: str = "func_1_2",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
         logging.info("======= func_1_2 execution start =======")
 
@@ -318,6 +319,7 @@ def dag_w1_d10():
         upstream_task_id: str = "func_1_2",
         task_name: str = "func_1_3",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
         logging.info("======= func_1_3 execution start =======")
 
@@ -352,6 +354,7 @@ def dag_w1_d10():
         upstream_task_id: str = "func_1_3",
         task_name: str = "func_1_4",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
         logging.info("======= func_1_4 execution start =======")
 
@@ -388,6 +391,7 @@ def dag_w1_d10():
         upstream_task_id: str = "func_1_4",
         task_name: str = "func_1_5",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
         logging.info("======= func_1_5 execution start =======")
 
@@ -424,6 +428,7 @@ def dag_w1_d10():
         upstream_task_id: str = "func_1_5",
         task_name: str = "func_1_6",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
         logging.info("======= func_1_6 execution start =======")
 
@@ -459,6 +464,7 @@ def dag_w1_d10():
         upstream_task_id: str = "func_1_6",
         task_name: str = "func_1_7",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
         logging.info("======= func_1_7 execution start =======")
 
@@ -494,6 +500,7 @@ def dag_w1_d10():
         upstream_task_id: str = "func_1_7",
         task_name: str = "func_1_8",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
         logging.info("======= func_1_8 execution start =======")
 
@@ -529,6 +536,7 @@ def dag_w1_d10():
         upstream_task_id: str = "func_1_8",
         task_name: str = "func_1_9",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
         logging.info("======= func_1_9 execution start =======")
 
@@ -564,6 +572,7 @@ def dag_w1_d10():
         upstream_task_id: str = "func_1_9",
         task_name: str = "func_1_10",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
         logging.info("======= func_1_10 execution start =======")
         
@@ -603,6 +612,7 @@ def dag_w1_d10():
         upstream_task_id="func_1_1",
         task_name="func_1_2",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_3_output = func_1_3(
         upstream_output_func_1_1=func_1_1_output,
@@ -610,6 +620,7 @@ def dag_w1_d10():
         upstream_task_id="func_1_1",
         task_name="func_1_3",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_4_output = func_1_4(
         upstream_output_func_1_1=func_1_1_output,
@@ -617,6 +628,7 @@ def dag_w1_d10():
         upstream_task_id="func_1_1",
         task_name="func_1_4",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_5_output = func_1_5(
         upstream_output_func_1_2=func_1_2_output,
@@ -626,6 +638,7 @@ def dag_w1_d10():
         upstream_task_id="func_1_4",
         task_name="func_1_5",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_6_output = func_1_6(
         upstream_output_func_1_5=func_1_5_output,
@@ -633,6 +646,7 @@ def dag_w1_d10():
         upstream_task_id="func_1_5",
         task_name="func_1_6",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_7_output = func_1_7(
         upstream_output_func_1_5=func_1_5_output,
@@ -640,6 +654,7 @@ def dag_w1_d10():
         upstream_task_id="func_1_5",
         task_name="func_1_7",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_8_output = func_1_8(
         upstream_output_func_1_5=func_1_5_output,
@@ -647,6 +662,7 @@ def dag_w1_d10():
         upstream_task_id="func_1_5",
         task_name="func_1_8",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_9_output = func_1_9(
         upstream_output_func_1_5=func_1_5_output,
@@ -654,6 +670,7 @@ def dag_w1_d10():
         upstream_task_id="func_1_5",
         task_name="func_1_9",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_10_output = func_1_10(
         upstream_output_func_1_5=func_1_5_output,
@@ -661,6 +678,7 @@ def dag_w1_d10():
         upstream_task_id="func_1_5",
         task_name="func_1_10",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
 
 

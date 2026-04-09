@@ -53,4 +53,5 @@ spec:
     metadata:
       annotations:
         autoscaling.knative.dev/window: "60s"
-        autoscaling.knative.dev/minScale: "90"
+        autoscaling.knative.dev/minScale: "2"
+        autoscaling.knative.dev/maxScale: "2"
