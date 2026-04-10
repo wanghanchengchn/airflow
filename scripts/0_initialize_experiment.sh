@@ -60,64 +60,73 @@ echo "Setting up Airflow"
 # echo "Deploying dag_w32_d3"
 # ./scripts/deploy_workflow.sh dag_w32_d3
 
+# echo "Deploying dag_w64_d3"
+# ./scripts/deploy_workflow.sh dag_w64_d3
 
-# production trace
-echo "Deploying dag_w1_d5_1"
-./scripts/deploy_workflow.sh dag_w1_d5_1
+# echo "Deploying dag_w128_d3"
+# ./scripts/deploy_workflow.sh dag_w128_d3
 
-echo "Deploying dag_w1_d5_2"
-./scripts/deploy_workflow.sh dag_w1_d5_2
+# echo "Deploying dag_w256_d3"
+# ./scripts/deploy_workflow.sh dag_w256_d3
 
-echo "Deploying dag_w1_d5_3"
-./scripts/deploy_workflow.sh dag_w1_d5_3
 
-echo "Deploying dag_w1_d5_4"
-./scripts/deploy_workflow.sh dag_w1_d5_4
+# # production trace
+# echo "Deploying dag_w1_d5_1"
+# ./scripts/deploy_workflow.sh dag_w1_d5_1
 
-echo "Deploying dag_w1_d5_5"
-./scripts/deploy_workflow.sh dag_w1_d5_5
+# echo "Deploying dag_w1_d5_2"
+# ./scripts/deploy_workflow.sh dag_w1_d5_2
 
-echo "Deploying dag_w1_d7_1"
-./scripts/deploy_workflow.sh dag_w1_d7_1
+# echo "Deploying dag_w1_d5_3"
+# ./scripts/deploy_workflow.sh dag_w1_d5_3
 
-echo "Deploying dag_w1_d7_2"
-./scripts/deploy_workflow.sh dag_w1_d7_2
+# echo "Deploying dag_w1_d5_4"
+# ./scripts/deploy_workflow.sh dag_w1_d5_4
 
-echo "Deploying dag_w1_d7_3"
-./scripts/deploy_workflow.sh dag_w1_d7_3
+# echo "Deploying dag_w1_d5_5"
+# ./scripts/deploy_workflow.sh dag_w1_d5_5
 
-echo "Deploying dag_w1_d7_4"
-./scripts/deploy_workflow.sh dag_w1_d7_4
+# echo "Deploying dag_w1_d7_1"
+# ./scripts/deploy_workflow.sh dag_w1_d7_1
 
-echo "Deploying dag_w1_d7_5"
-./scripts/deploy_workflow.sh dag_w1_d7_5
+# echo "Deploying dag_w1_d7_2"
+# ./scripts/deploy_workflow.sh dag_w1_d7_2
 
-echo "Deploying dag_w1_d10_1"
-./scripts/deploy_workflow.sh dag_w1_d10_1
+# echo "Deploying dag_w1_d7_3"
+# ./scripts/deploy_workflow.sh dag_w1_d7_3
 
-echo "Deploying dag_w1_d10_2"
-./scripts/deploy_workflow.sh dag_w1_d10_2
+# echo "Deploying dag_w1_d7_4"
+# ./scripts/deploy_workflow.sh dag_w1_d7_4
 
-echo "Deploying dag_w1_d10_3"
-./scripts/deploy_workflow.sh dag_w1_d10_3
+# echo "Deploying dag_w1_d7_5"
+# ./scripts/deploy_workflow.sh dag_w1_d7_5
 
-echo "Deploying dag_w1_d10_4"
-./scripts/deploy_workflow.sh dag_w1_d10_4
+# echo "Deploying dag_w1_d10_1"
+# ./scripts/deploy_workflow.sh dag_w1_d10_1
 
-echo "Deploying dag_w1_d10_5"
-./scripts/deploy_workflow.sh dag_w1_d10_5
+# echo "Deploying dag_w1_d10_2"
+# ./scripts/deploy_workflow.sh dag_w1_d10_2
 
-echo "Deploying dag_w1_d17_1"
-./scripts/deploy_workflow.sh dag_w1_d17_1
+# echo "Deploying dag_w1_d10_3"
+# ./scripts/deploy_workflow.sh dag_w1_d10_3
 
-echo "Deploying dag_w1_d17_2"
-./scripts/deploy_workflow.sh dag_w1_d17_2
+# echo "Deploying dag_w1_d10_4"
+# ./scripts/deploy_workflow.sh dag_w1_d10_4
 
-echo "Deploying dag_w1_d17_3"
-./scripts/deploy_workflow.sh dag_w1_d17_3
+# echo "Deploying dag_w1_d10_5"
+# ./scripts/deploy_workflow.sh dag_w1_d10_5
 
-echo "Deploying dag_w1_d17_4"
-./scripts/deploy_workflow.sh dag_w1_d17_4
+# echo "Deploying dag_w1_d17_1"
+# ./scripts/deploy_workflow.sh dag_w1_d17_1
 
-echo "Deploying dag_w1_d17_5"
-./scripts/deploy_workflow.sh dag_w1_d17_5
+# echo "Deploying dag_w1_d17_2"
+# ./scripts/deploy_workflow.sh dag_w1_d17_2
+
+# echo "Deploying dag_w1_d17_3"
+# ./scripts/deploy_workflow.sh dag_w1_d17_3
+
+# echo "Deploying dag_w1_d17_4"
+# ./scripts/deploy_workflow.sh dag_w1_d17_4
+
+# echo "Deploying dag_w1_d17_5"
+# ./scripts/deploy_workflow.sh dag_w1_d17_5
