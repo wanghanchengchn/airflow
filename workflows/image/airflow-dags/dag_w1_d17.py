@@ -427,8 +427,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_1",
         task_name: str = "func_1_2",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -484,8 +485,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_2",
         task_name: str = "func_1_3",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -544,8 +546,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_3",
         task_name: str = "func_1_4",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -613,8 +616,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_1",
         task_name: str = "func_1_5",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -670,8 +674,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_5",
         task_name: str = "func_1_6",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -730,8 +735,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_6",
         task_name: str = "func_1_7",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -799,8 +805,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_1",
         task_name: str = "func_1_8",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -856,8 +863,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_8",
         task_name: str = "func_1_9",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -916,8 +924,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_9",
         task_name: str = "func_1_10",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -985,8 +994,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_1",
         task_name: str = "func_1_11",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -1042,8 +1052,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_11",
         task_name: str = "func_1_12",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -1102,8 +1113,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_12",
         task_name: str = "func_1_13",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -1171,8 +1183,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_1",
         task_name: str = "func_1_14",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -1228,8 +1241,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_14",
         task_name: str = "func_1_15",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -1288,8 +1302,9 @@ def dag_w1_d17():
         upstream_task_id: str = "func_1_15",
         task_name: str = "func_1_16",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -1367,6 +1382,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_1",
         task_name="func_1_2",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_3_output = func_1_3(
         upstream_output_func_1_2=func_1_2_output,
@@ -1374,6 +1390,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_2",
         task_name="func_1_3",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_4_output = func_1_4(
         upstream_output_func_1_3=func_1_3_output,
@@ -1381,6 +1398,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_3",
         task_name="func_1_4",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_5_output = func_1_5(
         upstream_output_func_1_1=func_1_1_output,
@@ -1388,6 +1406,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_1",
         task_name="func_1_5",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_6_output = func_1_6(
         upstream_output_func_1_5=func_1_5_output,
@@ -1395,6 +1414,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_5",
         task_name="func_1_6",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_7_output = func_1_7(
         upstream_output_func_1_6=func_1_6_output,
@@ -1402,6 +1422,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_6",
         task_name="func_1_7",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_8_output = func_1_8(
         upstream_output_func_1_1=func_1_1_output,
@@ -1409,6 +1430,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_1",
         task_name="func_1_8",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_9_output = func_1_9(
         upstream_output_func_1_8=func_1_8_output,
@@ -1416,6 +1438,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_8",
         task_name="func_1_9",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_10_output = func_1_10(
         upstream_output_func_1_9=func_1_9_output,
@@ -1423,6 +1446,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_9",
         task_name="func_1_10",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_11_output = func_1_11(
         upstream_output_func_1_1=func_1_1_output,
@@ -1430,6 +1454,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_1",
         task_name="func_1_11",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_12_output = func_1_12(
         upstream_output_func_1_11=func_1_11_output,
@@ -1437,6 +1462,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_11",
         task_name="func_1_12",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_13_output = func_1_13(
         upstream_output_func_1_12=func_1_12_output,
@@ -1444,6 +1470,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_12",
         task_name="func_1_13",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_14_output = func_1_14(
         upstream_output_func_1_1=func_1_1_output,
@@ -1451,6 +1478,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_1",
         task_name="func_1_14",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_15_output = func_1_15(
         upstream_output_func_1_14=func_1_14_output,
@@ -1458,6 +1486,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_14",
         task_name="func_1_15",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_16_output = func_1_16(
         upstream_output_func_1_15=func_1_15_output,
@@ -1465,6 +1494,7 @@ def dag_w1_d17():
         upstream_task_id="func_1_15",
         task_name="func_1_16",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
 
 

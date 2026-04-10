@@ -340,8 +340,9 @@ def dag_w1_d5():
         upstream_task_id: str = "func_1_1",
         task_name: str = "func_1_2",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -386,8 +387,9 @@ def dag_w1_d5():
         upstream_task_id: str = "func_1_1",
         task_name: str = "func_1_3",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ):
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -435,8 +437,9 @@ def dag_w1_d5():
         upstream_task_id: str = "func_1_3",
         task_name: str = "func_1_4",
         enable_optimization: bool = True,
+        run_id: str = "{{ run_id }}",
     ): 
-        current_run_id = get_current_task_run_id(dag_id, task_name)
+        current_run_id = run_id
 
         if enable_optimization:
             # 数据平面优化模式：并行获取上游数据和建立数据库连接
@@ -480,6 +483,7 @@ def dag_w1_d5():
         upstream_task_id="func_1_1",
         task_name="func_1_2",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_3_output = func_1_3(
         upstream_output_func_1_1=func_1_1_output,
@@ -487,6 +491,7 @@ def dag_w1_d5():
         upstream_task_id="func_1_1",
         task_name="func_1_3",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
     func_1_4_output = func_1_4(
         upstream_output_func_1_2=func_1_2_output,
@@ -495,6 +500,7 @@ def dag_w1_d5():
         upstream_task_id="func_1_3",
         task_name="func_1_4",
         enable_optimization=_enable_optimization,
+        run_id="{{ run_id }}",
     )
 
 
